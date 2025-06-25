@@ -1,64 +1,86 @@
 @extends('layout.app')
 
+@section('title', 'Edit Barang Masuk')
+
 @section('content')
-<div class="container mt-4">
-    <h2>Edit Barang Masuk</h2>
+<div class="pagetitle">
+  <h1>Edit Barang Masuk</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ url('/admin') }}">Home</a></li>
+      <li class="breadcrumb-item active">Edit Barang Masuk</li>
+    </ol>
+  </nav>
+</div>
 
-    @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul>
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+<section class="section dashboard">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
 
-    <form action="{{ route('barang-masuk.update', $barangMasuk->id) }}" method="POST">
-        @csrf
-        @method('PUT')
+      <div class="card p-4">
+        @if ($errors->any())
+          <div class="alert alert-danger">
+            <ul class="mb-0">
+              @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
 
-        <div class="mb-3">
-            <label for="barang_id" class="form-label">Pilih Barang</label>
-            <select name="barang_id" id="barang_id" class="form-select" required>
+        <form action="{{ route('barang-masuk.update', $barangMasuk->id) }}" method="POST" class="mt-3">
+          @csrf
+          @method('PUT')
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="barang_id" class="form-label">Pilih Barang</label>
+              <select name="barang_id" id="barang_id" class="form-select" required>
                 <option value="">-- Pilih Barang --</option>
                 @foreach($barangs as $barang)
-                <option value="{{ $barang->id }}" {{ old('barang_id', $barangMasuk->barang_id) == $barang->id ? 'selected' : '' }}>
+                  <option value="{{ $barang->id }}" {{ old('barang_id', $barangMasuk->barang_id) == $barang->id ? 'selected' : '' }}>
                     {{ $barang->nama_barang }}
-                </option>
+                  </option>
                 @endforeach
-            </select>
-        </div>
+              </select>
+            </div>
 
-        <div class="mb-3">
-            <label for="payment_id" class="form-label">Pilih Payment</label>
-            <select name="payment_id" id="payment_id" class="form-select" required>
+            <div class="col-md-6">
+              <label for="payment_id" class="form-label">Pilih Payment</label>
+              <select name="payment_id" id="payment_id" class="form-select" required>
                 <option value="">-- Pilih Payment --</option>
                 @foreach($payments as $payment)
-                <option value="{{ $payment->id }}" {{ old('payment_id', $barangMasuk->payment_id) == $payment->id ? 'selected' : '' }}>
+                  <option value="{{ $payment->id }}" {{ old('payment_id', $barangMasuk->payment_id) == $payment->id ? 'selected' : '' }}>
                     {{ $payment->nama_payment ?? 'ID: ' . $payment->id }}
-                </option>
+                  </option>
                 @endforeach
-            </select>
-        </div>
+              </select>
+            </div>
 
-        <div class="mb-3">
-            <label for="jumlah_masuk" class="form-label">Jumlah Masuk</label>
-            <input type="number" name="jumlah_masuk" id="jumlah_masuk" class="form-control" min="1" value="{{ old('jumlah_masuk', $barangMasuk->jumlah_masuk) }}" required>
-        </div>
+            <div class="col-md-6">
+              <label for="jumlah_masuk" class="form-label">Jumlah Masuk</label>
+              <input type="number" name="jumlah_masuk" id="jumlah_masuk" class="form-control" min="1" value="{{ old('jumlah_masuk', $barangMasuk->jumlah_masuk) }}" required>
+            </div>
 
-        <div class="mb-3">
-            <label for="harga_satuan" class="form-label">Harga Satuan</label>
-            <input type="number" step="0.01" name="harga_satuan" id="harga_satuan" class="form-control" min="0" value="{{ old('harga_satuan', $barangMasuk->harga_satuan) }}" required>
-        </div>
+            <div class="col-md-6">
+              <label for="harga_satuan" class="form-label">Harga Satuan</label>
+              <input type="number" step="0.01" name="harga_satuan" id="harga_satuan" class="form-control" min="0" value="{{ old('harga_satuan', $barangMasuk->harga_satuan) }}" required>
+            </div>
 
-        <div class="mb-3">
-            <label for="tanggal_masuk" class="form-label">Tanggal Masuk</label>
-            <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="form-control" value="{{ old('tanggal_masuk', $barangMasuk->tanggal_masuk->format('Y-m-d')) }}" required>
-        </div>
+            <div class="col-md-6">
+              <label for="tanggal_masuk" class="form-label">Tanggal Masuk</label>
+              <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="form-control" value="{{ old('tanggal_masuk', $barangMasuk->tanggal_masuk->format('Y-m-d')) }}" required>
+            </div>
+          </div>
 
-        <button type="submit" class="btn btn-primary">Update Barang Masuk</button>
-        <a href="{{ route('barang-masuk.index') }}" class="btn btn-secondary">Batal</a>
-    </form>
-</div>
+          <div class="mt-4 d-flex justify-content-end gap-2">
+            <a href="{{ route('barang-masuk.index') }}" class="btn btn-secondary rounded-pill px-4">Batal</a>
+            <button type="submit" class="btn btn-success rounded-pill px-4">Update</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
 @endsection

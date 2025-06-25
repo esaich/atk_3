@@ -38,7 +38,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{ request()->routeIs('permintaan.*') ? '' : 'collapsed' }}" href="{{ route('permintaan.index') }}">
+      <a class="nav-link {{ request()->routeIs('admin.permintaan.*') ? '' : 'collapsed' }}" href="{{ route('admin.permintaan.index') }}">
         <i class="bi bi-card-checklist"></i>
         <span>Permintaan</span>
       </a>
