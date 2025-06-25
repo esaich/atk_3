@@ -32,7 +32,8 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link {{ request()->routeIs('barang-keluar.index') ? '' : 'collapsed' }}" href="{{ route('barang-keluar.index') }}">
+      {{-- Perbaikan: Mengubah nama rute menjadi admin.barang-keluar.index --}}
+      <a class="nav-link {{ request()->routeIs('admin.barang-keluar.index') ? '' : 'collapsed' }}" href="{{ route('admin.barang-keluar.index') }}">
         <i class="bi bi-bag-x"></i>
         <span>Barang Keluar</span>
       </a>

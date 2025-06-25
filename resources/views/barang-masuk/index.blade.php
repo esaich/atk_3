@@ -11,7 +11,7 @@
             <li class="breadcrumb-item active">Barang Masuk</li>
         </ol>
     </nav>
-</div>
+</div><!-- End Page Title -->
 
 <section class="section dashboard">
     <div class="row justify-content-center">
@@ -40,7 +40,7 @@
                             <tr>
                                 <th>No</th>
                                 <th>Barang</th>
-                                <th>Payment</th>
+                                <th>Supplier</th> {{-- UBAH DARI 'Payment' MENJADI 'Supplier' --}}
                                 <th>Jumlah Masuk</th>
                                 <th>Harga Satuan</th>
                                 <th>Tanggal Masuk</th>
@@ -52,7 +52,8 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $bm->barang->nama_barang ?? '-' }}</td>
-                                <td>{{ $bm->payment ? ($bm->payment->nama_payment ?? 'ID: ' . $bm->payment->id) : '-' }}</td>
+                                {{-- UBAH DARI $bm->payment KE $bm->supplier --}}
+                                <td>{{ $bm->supplier->nama_supplier ?? '-' }}</td> 
                                 <td>{{ $bm->jumlah_masuk }}</td>
                                 <td>Rp {{ number_format($bm->harga_satuan, 2, ',', '.') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($bm->tanggal_masuk)->format('d-m-Y') }}</td>

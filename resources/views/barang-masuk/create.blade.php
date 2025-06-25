@@ -29,13 +29,14 @@
             </select>
         </div>
 
+        {{-- UBAH INI DARI payment_id KE supplier_id --}}
         <div class="mb-3">
-            <label for="payment_id" class="form-label">Pilih Payment</label>
-            <select name="payment_id" id="payment_id" class="form-select" required>
-                <option value="">-- Pilih Payment --</option>
-                @foreach($payments as $payment)
-                    <option value="{{ $payment->id }}" {{ old('payment_id') == $payment->id ? 'selected' : '' }}>
-                        {{ $payment->nama_payment ?? 'ID: ' . $payment->id }}
+            <label for="supplier_id" class="form-label">Pilih Supplier</label>
+            <select name="supplier_id" id="supplier_id" class="form-select" required>
+                <option value="">-- Pilih Supplier --</option>
+                @foreach($suppliers as $supplier)
+                    <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                        {{ $supplier->nama_supplier }}
                     </option>
                 @endforeach
             </select>

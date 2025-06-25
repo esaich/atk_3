@@ -22,43 +22,54 @@ Route::post('/login', [SesiController::class, 'login']);
 
 // Group middleware admin
 Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function () {
-    // Rute tanpa prefix 'admin/' di URL dan tanpa prefix nama 'admin.'
-    // URL: /admin, /supplier, /payment, /barang, /barang-masuk, /barang-keluar
-    // Nama Rute: admin.dashboard, supplier.*, payment.*, barang.*, barang-masuk.*, barang-keluar.*
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::resource('supplier', SupplierController::class);
-    Route::resource('payment', PaymentController::class);
-    Route::resource('barang', BarangController::class);
-    Route::resource('barang-masuk', BarangMasukController::class);
-    Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
+    // Rute utama admin dashboard
+Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+Route::resource('supplier', SupplierController::class);
+    
+    // Tambahkan rute untuk Payment secara spesifik, termasuk rute show dan downloadPdf
+    Route::get('payment', [PaymentController::class, 'index'])->name('payment.index');
+    Route::get('payment/create', [PaymentController::class, 'create'])->name('payment.create');
+    Route::post('payment', [PaymentController::class, 'store'])->name('payment.store');
+    Route::get('payment/{payment}/edit', [PaymentController::class, 'edit'])->name('payment.edit');
+    Route::put('payment/{payment}', [PaymentController::class, 'update'])->name('payment.update');
+    Route::delete('payment/{payment}', [PaymentController::class, 'destroy'])->name('payment.destroy');
+    // Rute untuk menampilkan detail pembayaran (harus sebelum rute downloadPdf jika downloadPdf adalah sub-rute)
+    Route::get('payment/{payment}', [PaymentController::class, 'show'])->name('payment.show');
+    // Rute BARU untuk download PDF
+    Route::get('payment/{payment}/download-pdf', [PaymentController::class, 'downloadPdf'])->name('payment.downloadPdf');
 
-    // Grup rute ini memberikan prefix URL 'admin/' dan prefix nama 'admin.'
-    // URL: /admin/divisi, /admin/permintaan
-    // Nama Rute: admin.divisi.*, admin.permintaan.*
+
+Route::resource('barang', BarangController::class);
+Route::resource('barang-masuk', BarangMasukController::class);
+    
+    // Ini adalah blok PENTING: Grup rute untuk admin dengan prefix URL 'admin/' dan prefix nama 'admin.'
     Route::prefix('admin')->as('admin.')->group(function () {
-        Route::resource('divisi', DivisiUserController::class);
+Route::resource('divisi', DivisiUserController::class);
         
-        // Rute untuk PermintaanAdminController
-        // Nama rute akan menjadi admin.permintaan.index, admin.permintaan.approve, dll.
-        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index');
-        Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
-        Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
-    });
+        // RUTE UNTUK PermintaanAdminController HARUS DI SINI
+Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index');
+Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
+Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
+        
+        // RUTE barang-keluar JUGA HARUS DI SINI jika Anda ingin nama rutenya menjadi admin.barang-keluar.index
+Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
+
+});
 });
 
 // Group middleware divisi
 Route::middleware(['auth', RoleMiddleware::class . ':divisi'])
-    ->prefix('divisi')
-    ->name('divisi.')
-    ->group(function () {
-        Route::get('/', [DivisiController::class, 'index'])->name('dashboard');
-        Route::resource('permintaan-barang', PermintaanBarangController::class);
-    });
+->prefix('divisi')
+->name('divisi.')
+->group(function () {
+Route::get('/', [DivisiController::class, 'index'])->name('dashboard');
+Route::resource('permintaan-barang', PermintaanBarangController::class);
+});
 
 // Logout
 Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/login');
+Auth::logout();
+request()->session()->invalidate();
+request()->session()->regenerateToken();
+return redirect('/login');
 })->name('logout');

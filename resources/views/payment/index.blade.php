@@ -32,12 +32,17 @@
                     <td>{{ $payment->tanggal_bayar->format('d-m-Y') }}</td>
                     <td>{{ $payment->keterangan ?? '-' }}</td>
                     <td>
-                        <a href="{{ route('payment.edit', $payment->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                        <form action="{{ route('payment.destroy', $payment->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus pembayaran ini?');">
+                        {{-- TOMBOL LIHAT DETAIL --}}
+                        <a href="{{ route('payment.show', $payment->id) }}" class="btn btn-info btn-sm">Lihat Detail</a>
+                        
+                        {{-- Tombol Edit dan Hapus (Anda bisa memilih untuk menyimpannya atau tidak) --}}
+                        {{-- Jika Anda ingin menyembunyikannya atau memindahkannya ke halaman detail: --}}
+                        {{-- <a href="{{ route('payment.edit', $payment->id) }}" class="btn btn-warning btn-sm">Edit</a> --}}
+                        {{-- <form action="{{ route('payment.destroy', $payment->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin ingin menghapus pembayaran ini?');">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
-                        </form>
+                        </form> --}}
                     </td>
                 </tr>
                 @endforeach
