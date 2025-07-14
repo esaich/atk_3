@@ -150,5 +150,8 @@
         window.location.href = "{{ route('login') }}";
       };
     </script>
+
+    {{-- Ini adalah baris yang perlu Anda tambahkan --}}
+    @stack('scripts') 
   </body>
 </html>

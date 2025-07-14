@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Barang extends Model
 {
     protected $table = 'barang';
-    protected $fillable = ['kode_barang', 'nama_barang', 'stok', 'satuan', 'keterangan', 'supplier_id'];
+    // Hapus 'supplier_id' dan 'keterangan' dari $fillable
+    protected $fillable = ['kode_barang', 'nama_barang', 'stok', 'satuan']; 
 
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
-    }
+    // Hapus relasi supplier() karena kolom supplier_id sudah tidak ada
+    // public function supplier()
+    // {
+    //     return $this->belongsTo(Supplier::class);
+    // }
 
     public function permintaanBarang()
     {

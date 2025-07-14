@@ -27,13 +27,15 @@
             <input type="text" name="nama_barang" class="form-control" value="{{ old('nama_barang') }}" required>
         </div>
 
-        <!-- Hapus input stok -->
+        {{-- Hapus input stok --}}
 
         <div class="mb-3">
             <label>Satuan</label>
             <input type="text" name="satuan" class="form-control" value="{{ old('satuan') }}" required>
         </div>
 
+        {{-- Hapus div Supplier --}}
+        {{-- 
         <div class="mb-3">
             <label>Supplier</label>
             <select name="supplier_id" class="form-select">
@@ -44,12 +46,16 @@
                     </option>
                 @endforeach
             </select>
-        </div>
+        </div> 
+        --}}
 
+        {{-- Hapus div Keterangan --}}
+        {{--
         <div class="mb-3">
             <label>Keterangan</label>
             <textarea name="keterangan" class="form-control">{{ old('keterangan') }}</textarea>
         </div>
+        --}}
 
         <button class="btn btn-primary" type="submit">Simpan</button>
         <a href="{{ route('barang.index') }}" class="btn btn-secondary">Batal</a>
