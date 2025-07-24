@@ -11,19 +11,12 @@
             <li class="breadcrumb-item active">Daftar Barang</li>
         </ol>
     </nav>
-</div>
+</div><!-- End Page Title -->
 
 <section class="section dashboard">
     <div class="row">
         <div class="col-lg-12">
             <div class="card recent-sales overflow-auto p-3">
-
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title">Tabel Barang</h5>
-                    <a href="{{ route('barang.create') }}" class="btn btn-primary rounded-pill">
-                        <i class="bi bi-plus-lg me-1"></i> Tambah Barang
-                    </a>
-                </div>
 
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -32,49 +25,57 @@
                     </div>
                 @endif
 
-                @if($barangs->isEmpty())
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="{{ route('barang.create') }}" class="btn btn-primary">Tambah Barang Baru</a>
+                </div>
+
+                @if($barangs->isEmpty()) {{-- Perhatikan variabelnya adalah $barangs --}}
                     <div class="alert alert-info">Belum ada data barang.</div>
                 @else
-                    <table class="table table-striped table-borderless datatable">
+                    <table class="table table-striped table-hover datatable">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">No</th>
-                                <th scope="col">Kode Barang</th>
                                 <th scope="col">Nama Barang</th>
                                 <th scope="col">Stok</th>
                                 <th scope="col">Satuan</th>
-                                {{-- Hapus kolom Supplier --}}
-                                {{-- <th scope="col">Supplier</th> --}}
-                                {{-- Hapus kolom Keterangan --}}
-                                {{-- <th scope="col">Keterangan</th> --}}
-                                <th scope="col" style="width: 120px;">Aksi</th>
+                                <th scope="col">Keterangan</th>
+                                <th scope="col">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($barangs as $index => $barang)
-                                <tr>
-                                    <th scope="row">{{ $index + 1 }}</th>
-                                    <td>{{ $barang->kode_barang }}</td>
-                                    <td>{{ $barang->nama_barang }}</td>
-                                    <td>{{ $barang->stok }}</td>
-                                    <td>{{ $barang->satuan }}</td>
-                                    {{-- Hapus data supplier --}}
-                                    {{-- <td>{{ $barang->supplier?->nama_supplier ?? '-' }}</td> --}}
-                                    {{-- Hapus data keterangan --}}
-                                    {{-- <td>{{ $barang->keterangan ?? '-' }}</td> --}}
-                                    <td>
-                                        <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-warning btn-sm me-1" title="Edit">
-                                            <i class="bi bi-pencil-square"></i>
+                            @foreach($barangs as $index => $barang) {{-- Perhatikan variabelnya adalah $barangs --}}
+                            <tr>
+                                <th scope="row">{{ $index + 1 }}</th>
+                                <td>{{ $barang->nama_barang }}</td>
+                                <td>{{ $barang->stok }}</td>
+                                <td>{{ $barang->satuan ?? '-' }}</td>
+                                <td>{{ $barang->keterangan ?? '-' }}</td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ route('barang.show', $barang->id) }}" class="btn btn-info btn-sm" title="Detail Barang">
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                        <form action="{{ route('barang.destroy', $barang->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
+                                        <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-warning btn-sm" title="Edit Barang">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('barang.destroy', $barang->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus barang ini?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
-                                                <i class="bi bi-trash-fill"></i>
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus Barang">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
+                            </tr>
                             @endforeach
                         </tbody>
                     </table>

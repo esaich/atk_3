@@ -12,64 +12,101 @@ use App\Http\Controllers\BarangController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\PermintaanAdminController;
-use App\Http\Controllers\PermintaanBarangController;
+use App\Http\Controllers\PermintaanBarangController; // <-- PASTIKAN INI ADA
+use App\Http\Controllers\PengadaanBarangController; 
 
-Route::redirect('/', '/login'); // Redirect ke login
+Route::redirect('/', '/login'); // Redirect to login
 
-// Halaman Login
+// Login Page
 Route::get('/login', [SesiController::class, 'index'])->name('login');
 Route::post('/login', [SesiController::class, 'login']);
 
-// Group middleware admin
+// Admin middleware group
 Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function () {
-    // Rute utama admin dashboard
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-Route::resource('supplier', SupplierController::class);
+    // Admin dashboard main route
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::resource('supplier', SupplierController::class);
     
-    // Tambahkan rute untuk Payment secara spesifik, termasuk rute show dan downloadPdf
+    // Specific Payment routes, including show and downloadPdf
     Route::get('payment', [PaymentController::class, 'index'])->name('payment.index');
     Route::get('payment/create', [PaymentController::class, 'create'])->name('payment.create');
     Route::post('payment', [PaymentController::class, 'store'])->name('payment.store');
     Route::get('payment/{payment}/edit', [PaymentController::class, 'edit'])->name('payment.edit');
     Route::put('payment/{payment}', [PaymentController::class, 'update'])->name('payment.update');
     Route::delete('payment/{payment}', [PaymentController::class, 'destroy'])->name('payment.destroy');
-    // Rute untuk menampilkan detail pembayaran (harus sebelum rute downloadPdf jika downloadPdf adalah sub-rute)
+    // Route to display payment details (must be before downloadPdf route if downloadPdf is a sub-route)
     Route::get('payment/{payment}', [PaymentController::class, 'show'])->name('payment.show');
-    // Rute BARU untuk download PDF
+    // NEW route for PDF download
     Route::get('payment/{payment}/download-pdf', [PaymentController::class, 'downloadPdf'])->name('payment.downloadPdf');
 
 
-Route::resource('barang', BarangController::class);
-Route::resource('barang-masuk', BarangMasukController::class);
+    Route::resource('barang', BarangController::class);
+    Route::resource('barang-masuk', BarangMasukController::class);
     
-    // Ini adalah blok PENTING: Grup rute untuk admin dengan prefix URL 'admin/' dan prefix nama 'admin.'
+    // IMPORTANT block: Admin routes group with 'admin/' URL prefix and 'admin.' name prefix
     Route::prefix('admin')->as('admin.')->group(function () {
-Route::resource('divisi', DivisiUserController::class);
+        Route::resource('divisi', DivisiUserController::class);
         
-        // RUTE UNTUK PermintaanAdminController HARUS DI SINI
-Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index');
-Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
-Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
+        // ROUTES FOR PermintaanAdminController MUST BE HERE
+        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index');
+        Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
+        Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
         
-        // RUTE barang-keluar JUGA HARUS DI SINI jika Anda ingin nama rutenya menjadi admin.barang-keluar.index
-Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
+        // barang-keluar ROUTES MUST ALSO BE HERE if you want their route names to be admin.barang-keluar.index
+        Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
+
+    });
+
+    // --- NEW routes for Pengadaan Barang (CRUD per item and Grouped View/PDF) ---
+    Route::prefix('pengadaan')->as('pengadaan.')->group(function () {
+        // This route will now call indexGrouped()
+        Route::get('/', [PengadaanBarangController::class, 'indexGrouped'])->name('index'); // <-- MODIFIED
+        Route::get('/create', [PengadaanBarangController::class, 'create'])->name('create');
+        Route::post('/', [PengadaanBarangController::class, 'store'])->name('store');
+        
+        // Show, Edit, Delete for individual PengadaanBarang items
+        Route::get('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'show'])->name('show'); // <-- MODIFIED (added /item prefix)
+        Route::get('/item/{pengadaanBarang}/edit', [PengadaanBarangController::class, 'edit'])->name('edit'); // <-- MODIFIED (added /item prefix)
+        Route::put('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'update'])->name('update'); // <-- MODIFIED (added /item prefix)
+        Route::delete('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'destroy'])->name('destroy'); // <-- MODIFIED (added /item prefix)
+        
+        // Route for single item PDF download (if still needed)
+        Route::get('/item/{pengadaanBarang}/download-pdf', [PengadaanBarangController::class, 'downloadPdf'])->name('downloadPdfItem'); // <-- MODIFIED (renamed and added /item prefix)
+
+        // NEW route to show grouped details (e.g., /pengadaan/supplier/1/2025-07-22)
+        Route::get('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedShow'])->name('groupedShow'); // <-- NEW
+
+        // NEW route to delete a grouped set of pengadaan items
+        Route::delete('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedDestroy'])->name('groupedDestroy'); // <-- NEW
+
+        // NEW route for grouped PDF download
+        Route::get('/grouped/{supplier}/{tanggal_pengajuan}/download-pdf', [PengadaanBarangController::class, 'downloadPdfGrouped'])->name('downloadPdfGrouped'); // <-- NEW
+    });
+    // --- END NEW routes ---
 
 });
-});
 
-// Group middleware divisi
+// Divisi middleware group
 Route::middleware(['auth', RoleMiddleware::class . ':divisi'])
-->prefix('divisi')
-->name('divisi.')
-->group(function () {
-Route::get('/', [DivisiController::class, 'index'])->name('dashboard');
-Route::resource('permintaan-barang', PermintaanBarangController::class);
-});
+    ->prefix('divisi')
+    ->name('divisi.')
+    ->group(function () {
+        Route::get('/', [DivisiController::class, 'index'])->name('dashboard');
+        // Rute untuk Permintaan Barang
+        // Kecualikan 'show' default karena kita akan menggunakan 'showGroupedByDate' yang baru
+        Route::resource('permintaan-barang', PermintaanBarangController::class)->except(['show']); // <-- MODIFIED
+        
+        // Rute BARU untuk menampilkan detail permintaan yang dikelompokkan per tanggal
+        Route::get('permintaan-barang/{tanggal}/show-grouped', [PermintaanBarangController::class, 'showGroupedByDate'])->name('permintaan-barang.showGroupedByDate'); // <-- NEW
+        
+        // Jika Anda ingin menambahkan rute untuk download PDF per kelompok di masa depan, tambahkan di sini:
+        // Route::get('permintaan-barang/{tanggal}/download-pdf-grouped', [PermintaanBarangController::class, 'downloadPdfGrouped'])->name('permintaan-barang.downloadPdfGrouped');
+    });
 
 // Logout
 Route::post('/logout', function () {
-Auth::logout();
-request()->session()->invalidate();
-request()->session()->regenerateToken();
-return redirect('/login');
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
 })->name('logout');
