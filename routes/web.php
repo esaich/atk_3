@@ -11,7 +11,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
-use App\Http\Controllers\PermintaanAdminController; // <-- PASTIKAN INI ADA
+use App\Http\Controllers\PermintaanAdminController; 
 use App\Http\Controllers\PermintaanBarangController; 
 use App\Http\Controllers\PengadaanBarangController; 
 
@@ -47,16 +47,20 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::resource('divisi', DivisiUserController::class);
         
-        // ROUTES FOR PermintaanAdminController
-        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index'); // <-- Pastikan ini memanggil index() yang baru
+        // ROUTES FOR PermintaanAdminController (TETAP TERPISAH)
+        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index'); 
         Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
         Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
         Route::get('/permintaan/{tanggal}/show-grouped', [PermintaanAdminController::class, 'showGroupedByDate'])->name('permintaan.showGroupedByDate');
         
-        // Rute BARU untuk Edit dan Update Permintaan Barang oleh Admin
-        Route::get('/permintaan/{permintaan_barang}/edit', [PermintaanAdminController::class, 'edit'])->name('permintaan.edit'); // <-- NEW
-        Route::put('/permintaan/{permintaan_barang}', [PermintaanAdminController::class, 'update'])->name('permintaan.update'); // <-- NEW
+        // Rute untuk Edit dan Update Permintaan Barang oleh Admin
+        Route::get('/permintaan/{permintaan_barang}/edit', [PermintaanAdminController::class, 'edit'])->name('permintaan.edit'); 
+        Route::put('/permintaan/{permintaan_barang}', [PermintaanAdminController::class, 'update'])->name('permintaan.update'); 
         
+        // Rute untuk Pengaturan Akun Admin (AdminController)
+        Route::get('/settings', [AdminController::class, 'showSettingsForm'])->name('settings.index'); 
+        Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update'); 
+
         // barang-keluar ROUTES MUST ALSO BE HERE if you want their route names to be admin.barang-keluar.index
         Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
 
@@ -65,27 +69,27 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
     // --- NEW routes for Pengadaan Barang (CRUD per item and Grouped View/PDF) ---
     Route::prefix('pengadaan')->as('pengadaan.')->group(function () {
         // This route will now call indexGrouped()
-        Route::get('/', [PengadaanBarangController::class, 'indexGrouped'])->name('index'); // <-- MODIFIED
+        Route::get('/', [PengadaanBarangController::class, 'indexGrouped'])->name('index'); 
         Route::get('/create', [PengadaanBarangController::class, 'create'])->name('create');
         Route::post('/', [PengadaanBarangController::class, 'store'])->name('store');
         
         // Show, Edit, Delete for individual PengadaanBarang items
-        Route::get('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'show'])->name('show'); // <-- MODIFIED (added /item prefix)
-        Route::get('/item/{pengadaanBarang}/edit', [PengadaanBarangController::class, 'edit'])->name('edit'); // <-- MODIFIED (added /item prefix)
-        Route::put('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'update'])->name('update'); // <-- MODIFIED (added /item prefix)
-        Route::delete('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'destroy'])->name('destroy'); // <-- MODIFIED (added /item prefix)
+        Route::get('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'show'])->name('show'); 
+        Route::get('/item/{pengadaanBarang}/edit', [PengadaanBarangController::class, 'edit'])->name('edit'); 
+        Route::put('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'update'])->name('update'); 
+        Route::delete('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'destroy'])->name('destroy'); 
         
         // Route for single item PDF download (if still needed)
-        Route::get('/item/{pengadaanBarang}/download-pdf', [PengadaanBarangController::class, 'downloadPdf'])->name('downloadPdfItem'); // <-- MODIFIED (renamed and added /item prefix)
+        Route::get('/item/{pengadaanBarang}/download-pdf', [PengadaanBarangController::class, 'downloadPdf'])->name('downloadPdfItem'); 
 
         // NEW route to show grouped details (e.g., /pengadaan/supplier/1/2025-07-22)
-        Route::get('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedShow'])->name('groupedShow'); // <-- NEW
+        Route::get('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedShow'])->name('groupedShow'); 
 
         // NEW route to delete a grouped set of pengadaan items
-        Route::delete('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedDestroy'])->name('groupedDestroy'); // <-- NEW
+        Route::delete('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedDestroy'])->name('groupedDestroy'); 
 
         // NEW route for grouped PDF download
-        Route::get('/grouped/{supplier}/{tanggal_pengajuan}/download-pdf', [PengadaanBarangController::class, 'downloadPdfGrouped'])->name('downloadPdfGrouped'); // <-- NEW
+        Route::get('/grouped/{supplier}/{tanggal_pengajuan}/download-pdf', [PengadaanBarangController::class, 'downloadPdfGrouped'])->name('downloadPdfGrouped'); 
     });
     // --- END NEW routes ---
 

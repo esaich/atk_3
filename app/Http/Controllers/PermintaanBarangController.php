@@ -6,8 +6,8 @@ use App\Models\PermintaanBarang;
 use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator; // <-- BARIS INI DITAMBAHKAN
-use Carbon\Carbon; // Import Carbon untuk penanganan tanggal
+use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class PermintaanBarangController extends Controller
 {
@@ -102,8 +102,8 @@ class PermintaanBarangController extends Controller
         $errors = [];
 
         foreach ($items as $item) {
-            // Validasi setiap item dalam array
-            $validator = Validator::make($item, [ // <-- PERBAIKAN DI SINI
+            // Validasi dasar untuk setiap item dalam array
+            $validator = Validator::make($item, [
                 'barang_id' => 'required|exists:barang,id',
                 'jumlah' => 'required|integer|min:1',
                 'alasan' => 'nullable|string',
@@ -113,6 +113,19 @@ class PermintaanBarangController extends Controller
                 $errors[] = "Validasi gagal untuk item barang ID " . ($item['barang_id'] ?? 'tidak diketahui') . ": " . implode(', ', $validator->errors()->all());
                 continue; // Lanjutkan ke item berikutnya jika validasi gagal
             }
+
+            // --- Logika Validasi Stok BARU ---
+            $barang = Barang::find($item['barang_id']);
+            if (!$barang) {
+                $errors[] = "Barang dengan ID " . $item['barang_id'] . " tidak ditemukan.";
+                continue;
+            }
+
+            if ($item['jumlah'] > $barang->stok) {
+                $errors[] = "Stok " . $barang->nama_barang . " tidak mencukupi. Tersedia: " . $barang->stok . ", Diminta: " . $item['jumlah'] . ".";
+                continue; // Jangan proses item ini jika stok tidak cukup
+            }
+            // --- Akhir Logika Validasi Stok BARU ---
 
             // Buat record permintaan baru untuk setiap item
             PermintaanBarang::create([
@@ -164,6 +177,34 @@ class PermintaanBarangController extends Controller
             'jumlah' => 'required|integer|min:1',
             'alasan' => 'nullable|string',
         ]);
+
+        // --- Logika Validasi Stok BARU untuk Update ---
+        $barang = Barang::find($request->barang_id);
+        if (!$barang) {
+            return redirect()->back()->withInput()->withErrors(['barang_id' => 'Barang tidak ditemukan.']);
+        }
+
+        // Hitung stok yang akan menjadi setelah update:
+        // Stok saat ini + jumlah permintaan lama - jumlah permintaan baru
+        // Atau lebih sederhana: cek apakah jumlah baru > stok saat ini (jika barang_id sama)
+        // Jika barang_id berubah, logika ini perlu lebih kompleks
+        
+        // Asumsi: Jika barang_id tidak berubah, kita perlu mempertimbangkan jumlah lama
+        $oldJumlah = $permintaan_barang->jumlah;
+        $newJumlah = $request->jumlah;
+
+        if ($request->barang_id == $permintaan_barang->barang_id) {
+            // Jika barangnya sama, cek apakah penambahan jumlah melebihi stok
+            if (($barang->stok + $oldJumlah) < $newJumlah) { // (Stok saat ini + jumlah yang akan dikembalikan dari permintaan lama) < jumlah baru
+                 return redirect()->back()->withInput()->withErrors(['jumlah' => 'Stok ' . $barang->nama_barang . ' tidak mencukupi untuk jumlah yang diminta. Tersedia: ' . ($barang->stok + $oldJumlah) . '.']);
+            }
+        } else {
+            // Jika barangnya berbeda, cek stok barang baru
+            if ($newJumlah > $barang->stok) {
+                return redirect()->back()->withInput()->withErrors(['jumlah' => 'Stok ' . $barang->nama_barang . ' tidak mencukupi. Tersedia: ' . $barang->stok . ', Diminta: ' . $newJumlah . '.']);
+            }
+        }
+        // --- Akhir Logika Validasi Stok BARU untuk Update ---
 
         // Perbarui record permintaan
         $permintaan_barang->update($request->only(['barang_id', 'jumlah', 'alasan']));

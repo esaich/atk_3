@@ -85,7 +85,7 @@
                         </div>
                         <div class="ps-3">
                             <h6>{{ $totalPermintaan ?? 0 }}</h6>
-                            <span class="text-muted small pt-2 ps-1">Permintaan belum diproses</span>
+                            <span class="text-muted small pt-2 ps-1">Belum diproses</span>
                         </div>
                     </div>
                 </div>

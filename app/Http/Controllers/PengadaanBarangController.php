@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;             // Untuk penanganan tanggal
 use Barryvdh\DomPDF\Facade\Pdf; // Untuk fungsionalitas PDF
 use Illuminate\Support\Facades\DB; // Untuk transaksi database
+use Illuminate\Support\Facades\Validator; // Import Validator untuk validasi item individual
 
 class PengadaanBarangController extends Controller
 {
@@ -73,24 +74,63 @@ class PengadaanBarangController extends Controller
 
     /**
      * Menyimpan pengajuan pengadaan barang baru ke database.
+     * Sekarang mendukung pengajuan multi-item melalui JSON.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
+        // Validasi utama untuk memastikan ada data JSON yang dikirim
         $request->validate([
-            'nama_barang' => 'required|string|max:255',
-            'satuan' => 'nullable|string|max:100',
-            'jumlah_diajukan' => 'required|integer|min:1',
-            'tanggal_pengajuan' => 'required|date',
-            'keterangan' => 'nullable|string',
-            'supplier_id' => 'required|exists:supplier,id', // Validasi supplier_id
+            'items_data' => 'required|json', // Validasi bahwa ini adalah JSON string
         ]);
 
-        PengadaanBarang::create($request->all());
+        $items = json_decode($request->items_data, true); // Decode JSON string menjadi array PHP
 
-        return redirect()->route('pengadaan.index')->with('success', 'Pengajuan pengadaan barang berhasil ditambahkan.');
+        // Jika array item kosong setelah decode
+        if (empty($items)) {
+            return redirect()->back()->withInput()->withErrors(['items_data' => 'Tidak ada item pengajuan yang ditambahkan.']);
+        }
+
+        $errors = []; // Array untuk mengumpulkan error validasi per item
+
+        // Loop melalui setiap item dalam array dan simpan ke database
+        foreach ($items as $item) {
+            // Validasi setiap item dalam array
+            $validator = Validator::make($item, [
+                'nama_barang' => 'required|string|max:255',
+                'satuan' => 'nullable|string|max:100',
+                'jumlah_diajukan' => 'required|integer|min:1',
+                'tanggal_pengajuan' => 'required|date',
+                'keterangan' => 'nullable|string',
+                'supplier_id' => 'required|exists:supplier,id',
+            ]);
+
+            if ($validator->fails()) {
+                // Kumpulkan pesan error untuk item yang gagal
+                $errors[] = "Validasi gagal untuk item '" . ($item['nama_barang'] ?? 'tidak diketahui') . "': " . implode(', ', $validator->errors()->all());
+                continue; // Lanjutkan ke item berikutnya jika validasi gagal
+            }
+
+            // Buat record PengadaanBarang baru untuk setiap item
+            PengadaanBarang::create([
+                'nama_barang' => $item['nama_barang'],
+                'satuan' => $item['satuan'] ?? null,
+                'jumlah_diajukan' => $item['jumlah_diajukan'],
+                'tanggal_pengajuan' => $item['tanggal_pengajuan'],
+                'keterangan' => $item['keterangan'] ?? null,
+                'supplier_id' => $item['supplier_id'],
+            ]);
+        }
+
+        // Jika ada error dari beberapa item, kembalikan dengan pesan error gabungan
+        if (!empty($errors)) {
+            return redirect()->route('pengadaan.index')->with('error', 'Beberapa pengajuan gagal diajukan: ' . implode('; ', $errors));
+        }
+
+        // Jika semua item berhasil disimpan
+        return redirect()->route('pengadaan.index')->with('success', 'Semua pengajuan pengadaan barang berhasil diajukan.');
     }
 
     /**
