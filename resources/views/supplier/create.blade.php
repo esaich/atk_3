@@ -27,7 +27,7 @@
         </div>
         <div class="mb-3">
             <label>Telepon</label>
-            <input type="text" name="telepon" class="form-control" value="{{ old('telepon') }}" required>
+            <input type="number" name="telepon" class="form-control" value="{{ old('telepon') }}" required>
         </div>
         <div class="mb-3">
             <label>Email</label>
