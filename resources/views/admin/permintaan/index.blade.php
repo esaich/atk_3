@@ -1,92 +1,104 @@
 @extends('layout.app')
 
+@section('title', 'Daftar Permintaan Barang Admin')
+
 @section('content')
-<div class="container mt-4">
-    <h2>Daftar dan Riwayat Permintaan Barang</h2>
+<div class="pagetitle">
+    <h1>Daftar Permintaan Barang</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url('/admin') }}">Home</a></li>
+            <li class="breadcrumb-item active">Daftar Permintaan Barang</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+<section class="section dashboard">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card recent-sales overflow-auto p-3">
 
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-    @if($permintaans->isEmpty())
-        <div class="alert alert-info">Belum ada riwayat permintaan barang.</div>
-    @else
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama Divisi / User</th>
-                    <th>Barang</th>
-                    <th>Jumlah</th>
-                    <th>Status</th>
-                    <th>Alasan (Jika Ditolak)</th>
-                    <th>Tanggal Permintaan</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($permintaans as $index => $permintaan)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $permintaan->user->name ?? 'N/A' }} ({{ $permintaan->user->email ?? 'N/A' }})</td>
-                    <td>{{ $permintaan->barang->nama_barang ?? '-' }}</td>
-                    <td>{{ $permintaan->jumlah }}</td>
-                    <td>
-                        {{-- Logika untuk menampilkan status menjadi 'Setuju', 'Tolak', atau 'Pending' --}}
-                        @if($permintaan->status == 'disetujui')
-                            <span class="badge bg-success">Setuju</span>
-                        @elseif($permintaan->status == 'ditolak')
-                            <span class="badge bg-danger">Tolak</span>
-                        @else
-                            <span class="badge bg-warning text-dark">Pending</span>
-                        @endif
-                    </td>
-                    <td>{{ $permintaan->alasan ?? '-' }}</td>
-                    <td>{{ $permintaan->created_at->format('d-m-Y H:i') }}</td>
-                    <td>
-                        @if($permintaan->status == 'pending')
-                            <form action="{{ route('admin.permintaan.approve', $permintaan->id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Setujui permintaan ini?')">Setujui</button>
-                            </form>
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $permintaan->id }}">Tolak</button>
+                {{-- Tombol "Buat Permintaan Baru" tidak ada di tampilan admin, karena admin tidak membuat permintaan --}}
+                {{-- Ini adalah tampilan untuk meninjau permintaan dari divisi --}}
 
-                            <!-- Modal Tolak -->
-                            <div class="modal fade" id="rejectModal{{ $permintaan->id }}" tabindex="-1" aria-labelledby="rejectModalLabel{{ $permintaan->id }}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <form action="{{ route('admin.permintaan.reject', $permintaan->id) }}" method="POST">
-                                        @csrf
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="rejectModalLabel{{ $permintaan->id }}">Tolak Permintaan</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <label for="alasan" class="form-label">Alasan Penolakan</label>
-                                                <textarea name="alasan" class="form-control" rows="3" required></textarea>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="submit" class="btn btn-danger">Tolak</button>
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                            </div>
+                @if($groupedPermintaans->isEmpty())
+                    <div class="alert alert-info">Belum ada permintaan barang yang diajukan.</div>
+                @else
+                    <table class="table table-striped table-hover datatable">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">No</th>
+                                <th scope="col">Tanggal Permintaan</th>
+                                <th scope="col">Jumlah Permintaan Unik</th>
+                                <th scope="col">Status (Ringkasan)</th>
+                                <th scope="col">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{-- Loop melalui setiap kelompok permintaan (per tanggal) --}}
+                            @foreach($groupedPermintaans as $groupKey => $group)
+                                <tr>
+                                    <th scope="row">{{ $loop->iteration }}</th>
+                                    <td>{{ \Carbon\Carbon::parse($group['tanggal'])->format('d-m-Y') }}</td>
+                                    <td>{{ $group['items']->count() }}</td>
+                                    <td>
+                                        {{-- Menampilkan status ringkasan untuk kelompok tanggal --}}
+                                        @php
+                                            $hasPending = $group['items']->contains('status', 'pending');
+                                            $hasApproved = $group['items']->contains('status', 'disetujui');
+                                            $hasRejected = $group['items']->contains('status', 'ditolak');
+                                            
+                                            if ($hasPending) {
+                                                echo '<span class="badge bg-warning text-dark">Pending</span>';
+                                            } elseif ($hasRejected && !$hasApproved && !$hasPending) {
+                                                echo '<span class="badge bg-danger">Ditolak Semua</span>';
+                                            } elseif ($hasApproved && !$hasRejected && !$hasPending) {
+                                                echo '<span class="badge bg-success">Disetujui Semua</span>';
+                                            } elseif ($hasApproved || $hasRejected) {
+                                                echo '<span class="badge bg-info">Campuran</span>'; // Ada yang disetujui/ditolak, tapi mungkin ada pending juga
+                                            } else {
+                                                echo '<span class="badge bg-secondary">Tidak Diketahui</span>';
+                                            }
+                                        @endphp
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            {{-- Tombol View Detail Kelompok Per Tanggal --}}
+                                            <a href="{{ route('admin.permintaan.showGroupedByDate', ['tanggal' => \Carbon\Carbon::parse($group['tanggal'])->format('Y-m-d')]) }}" class="btn btn-info btn-sm" title="Lihat Detail Permintaan">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                            {{-- Tombol Hapus Kelompok (opsional, jika admin bisa menghapus seluruh kelompok permintaan) --}}
+                                            {{-- <form action="{{ route('admin.permintaan.groupedDestroy', ['tanggal' => \Carbon\Carbon::parse($group['tanggal'])->format('Y-m-d')]) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus seluruh permintaan pada tanggal ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Hapus Kelompok Permintaan">
+                                                    <i class="bi bi-trash"></i> Hapus
+                                                </button>
+                                            </form> --}}
                                         </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- End Modal Tolak -->
-                        @else
-                            <em>Sudah diproses</em>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-</div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+
+            </div>
+        </div>
+    </div>
+</section>
 @endsection

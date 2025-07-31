@@ -11,8 +11,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\BarangMasukController;
 use App\Http\Controllers\BarangKeluarController;
-use App\Http\Controllers\PermintaanAdminController;
-use App\Http\Controllers\PermintaanBarangController; // <-- PASTIKAN INI ADA
+use App\Http\Controllers\PermintaanAdminController; // <-- PASTIKAN INI ADA
+use App\Http\Controllers\PermintaanBarangController; 
 use App\Http\Controllers\PengadaanBarangController; 
 
 Route::redirect('/', '/login'); // Redirect to login
@@ -47,10 +47,15 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::resource('divisi', DivisiUserController::class);
         
-        // ROUTES FOR PermintaanAdminController MUST BE HERE
-        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index');
+        // ROUTES FOR PermintaanAdminController
+        Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index'); // <-- Pastikan ini memanggil index() yang baru
         Route::post('/permintaan/{id}/approve', [PermintaanAdminController::class, 'approve'])->name('permintaan.approve');
         Route::post('/permintaan/{id}/reject', [PermintaanAdminController::class, 'reject'])->name('permintaan.reject');
+        Route::get('/permintaan/{tanggal}/show-grouped', [PermintaanAdminController::class, 'showGroupedByDate'])->name('permintaan.showGroupedByDate');
+        
+        // Rute BARU untuk Edit dan Update Permintaan Barang oleh Admin
+        Route::get('/permintaan/{permintaan_barang}/edit', [PermintaanAdminController::class, 'edit'])->name('permintaan.edit'); // <-- NEW
+        Route::put('/permintaan/{permintaan_barang}', [PermintaanAdminController::class, 'update'])->name('permintaan.update'); // <-- NEW
         
         // barang-keluar ROUTES MUST ALSO BE HERE if you want their route names to be admin.barang-keluar.index
         Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
@@ -94,10 +99,10 @@ Route::middleware(['auth', RoleMiddleware::class . ':divisi'])
         Route::get('/', [DivisiController::class, 'index'])->name('dashboard');
         // Rute untuk Permintaan Barang
         // Kecualikan 'show' default karena kita akan menggunakan 'showGroupedByDate' yang baru
-        Route::resource('permintaan-barang', PermintaanBarangController::class)->except(['show']); // <-- MODIFIED
+        Route::resource('permintaan-barang', PermintaanBarangController::class)->except(['show']);
         
         // Rute BARU untuk menampilkan detail permintaan yang dikelompokkan per tanggal
-        Route::get('permintaan-barang/{tanggal}/show-grouped', [PermintaanBarangController::class, 'showGroupedByDate'])->name('permintaan-barang.showGroupedByDate'); // <-- NEW
+        Route::get('permintaan-barang/{tanggal}/show-grouped', [PermintaanBarangController::class, 'showGroupedByDate'])->name('permintaan-barang.showGroupedByDate');
         
         // Jika Anda ingin menambahkan rute untuk download PDF per kelompok di masa depan, tambahkan di sini:
         // Route::get('permintaan-barang/{tanggal}/download-pdf-grouped', [PermintaanBarangController::class, 'downloadPdfGrouped'])->name('permintaan-barang.downloadPdfGrouped');
