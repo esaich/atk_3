@@ -32,37 +32,38 @@
                     </div>
                 @endif
 
-                <div class="d-flex justify-content-end mb-3">
+                <div class="d-flex justify-content-end mb-3 gap-2">
                     <a href="{{ route('barang.create') }}" class="btn btn-primary">Tambah Barang Baru</a>
+                    {{-- Tombol untuk mengunduh PDF --}}
+                    <a href="{{ route('barang.downloadPdf') }}" class="btn btn-secondary">Unduh PDF</a>
                 </div>
 
-                @if($barangs->isEmpty()) {{-- Perhatikan variabelnya adalah $barangs --}}
+                @if($barangs->isEmpty())
                     <div class="alert alert-info">Belum ada data barang.</div>
                 @else
                     <table class="table table-striped table-hover datatable">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">No</th>
+                                <th scope="col">Kode Barang</th>
                                 <th scope="col">Nama Barang</th>
                                 <th scope="col">Stok</th>
                                 <th scope="col">Satuan</th>
-                                <th scope="col">Keterangan</th>
                                 <th scope="col">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($barangs as $index => $barang) {{-- Perhatikan variabelnya adalah $barangs --}}
+                            {{-- Memastikan loop berjalan pada variabel $barangs --}}
+                            @foreach($barangs as $index => $barang)
                             <tr>
                                 <th scope="row">{{ $index + 1 }}</th>
+                                <td>{{ $barang->kode_barang }}</td>
                                 <td>{{ $barang->nama_barang }}</td>
                                 <td>{{ $barang->stok }}</td>
                                 <td>{{ $barang->satuan ?? '-' }}</td>
-                                <td>{{ $barang->keterangan ?? '-' }}</td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <a href="{{ route('barang.show', $barang->id) }}" class="btn btn-info btn-sm" title="Detail Barang">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                        {{-- Sesuai permintaan, tombol detail dihilangkan --}}
                                         <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-warning btn-sm" title="Edit Barang">
                                             <i class="bi bi-pencil"></i>
                                         </a>
@@ -80,7 +81,6 @@
                         </tbody>
                     </table>
                 @endif
-
             </div>
         </div>
     </div>

@@ -3,79 +3,111 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
-// Hapus use App\Models\Supplier; karena tidak lagi digunakan
-// use App\Models\Supplier; 
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BarangController extends Controller
 {
-    // Tampilkan daftar barang
+    /**
+     * Tampilkan daftar semua barang.
+     */
     public function index()
     {
-        // Hapus eager loading 'supplier'
-        $barangs = Barang::get(); 
+        $barangs = Barang::all();
         return view('barang.index', compact('barangs'));
     }
 
-    // Tampilkan form tambah barang baru
+    /**
+     * Tampilkan formulir untuk membuat barang baru.
+     */
     public function create()
     {
-        // Hapus fetching suppliers
-        // $suppliers = Supplier::all(); 
-        return view('barang.create'); // Hapus compact('suppliers')
+        return view('barang.create');
     }
 
-    // Simpan barang baru
+    /**
+     * Simpan barang baru ke database.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'kode_barang' => 'required|unique:barang,kode_barang',
-            'nama_barang' => 'required|string|max:255',
-            'satuan' => 'required|string|max:50',
-            // Hapus validasi supplier_id dan keterangan
-            // 'supplier_id' => 'nullable|exists:supplier,id',
-            // 'keterangan' => 'nullable|string',
+        // Validasi data input.
+        // PERBAIKAN: Mengganti 'unique:barangs' menjadi 'unique:barang'
+        $validated = $request->validate([
+            'kode_barang' => 'required|unique:barang',
+            'nama_barang' => 'required',
+            'satuan' => 'required',
         ]);
 
-        $data = $request->all();
-        $data['stok'] = 0; // Set stok default 0 saat create
+        Barang::create($validated);
 
-        Barang::create($data);
-
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan.');
+        // Menggunakan notifikasi berbasis session
+        return redirect()->route('barang.index')->with('success', 'Data barang berhasil ditambahkan!');
     }
 
-    // Tampilkan form edit barang
+    /**
+     * Tampilkan detail barang tertentu.
+     */
+    public function show(Barang $barang)
+    {
+        // Metode ini mungkin memerlukan tampilan 'barang.show'
+        // untuk menampilkan detail barang secara spesifik.
+        return view('barang.show', compact('barang'));
+    }
+
+    /**
+     * Tampilkan formulir untuk mengedit barang.
+     */
     public function edit(Barang $barang)
     {
-        // Hapus fetching suppliers
-        // $suppliers = Supplier::all(); 
-        return view('barang.edit', compact('barang')); // Hapus 'suppliers' dari compact
+        return view('barang.edit', compact('barang'));
     }
 
-    // Update data barang
+    /**
+     * Perbarui data barang di database.
+     */
     public function update(Request $request, Barang $barang)
     {
-        $request->validate([
+        // Validasi data input.
+        // PERBAIKAN: Mengganti 'unique:barangs' menjadi 'unique:barang'
+        $validated = $request->validate([
             'kode_barang' => 'required|unique:barang,kode_barang,' . $barang->id,
-            'nama_barang' => 'required|string|max:255',
-            'stok' => 'required|integer|min:0',
-            'satuan' => 'required|string|max:50',
-            // Hapus validasi supplier_id dan keterangan
-            // 'supplier_id' => 'nullable|exists:supplier,id',
-            // 'keterangan' => 'nullable|string',
+            'nama_barang' => 'required',
+            'stok' => 'required|numeric|min:0',
+            'satuan' => 'required',
         ]);
 
-        $barang->update($request->all());
+        $barang->update($validated);
 
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil diupdate.');
+        // Menggunakan notifikasi berbasis session
+        return redirect()->route('barang.index')->with('success', 'Data barang berhasil diupdate!');
     }
 
-    // Hapus barang
+    /**
+     * Hapus barang dari database.
+     */
     public function destroy(Barang $barang)
     {
-        $barang->delete();
+        try {
+            $barang->delete();
+            // Menggunakan notifikasi berbasis session
+            return redirect()->route('barang.index')->with('success', 'Data barang berhasil dihapus!');
+        } catch (\Exception $e) {
+            // Menggunakan notifikasi berbasis session
+            return redirect()->route('barang.index')->with('error', 'Barang tidak bisa dihapus karena masih ada di riwayat barang masuk atau keluar.');
+        }
+    }
 
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus.');
+    /**
+     * Unduh daftar semua barang sebagai file PDF.
+     */
+    public function downloadPdf()
+    {
+        $barangs = Barang::all();
+
+        // Mengirim data ke view 'barang.pdf_list' untuk dicetak
+        $pdf = Pdf::loadView('barang.pdf_list', compact('barangs'));
+
+        // Mengunduh file PDF dengan nama 'daftar_barang.pdf'
+        return $pdf->download('daftar_barang.pdf');
     }
 }
