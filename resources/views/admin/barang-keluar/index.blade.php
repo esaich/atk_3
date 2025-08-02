@@ -82,8 +82,8 @@
                                 <th scope="col">No</th>
                                 <th scope="col">Nama Barang</th>
                                 <th scope="col">Jumlah Keluar</th>
-                                <th scope="col">Peminjam (User / Divisi)</th>
-                                <th scope="col">Email Peminjam</th>
+                                <th scope="col">User  Divisi</th>
+                                <th scope="col">Email</th>
                                 <th scope="col">Tanggal Keluar</th>
                                 <th scope="col">Keterangan</th>
                             </tr>

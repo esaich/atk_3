@@ -116,7 +116,7 @@
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('barang.index') }}">
                         <i class="bi bi-box"></i>
-                        <span>Manajemen Barang</span>
+                        <span>Barang</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -136,7 +136,7 @@
                 <li class="nav-item">
                     <a class="nav-link collapsed" href="{{ route('supplier.index') }}">
                         <i class="bi bi-truck"></i>
-                        <span>Manajemen Supplier</span>
+                        <span>Supplier</span>
                     </a>
                 </li>
                 <li class="nav-item">
