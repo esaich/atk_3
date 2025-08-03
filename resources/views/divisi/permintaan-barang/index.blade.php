@@ -39,7 +39,8 @@
                 @if($groupedPermintaans->isEmpty())
                     <div class="alert alert-info">Belum ada permintaan barang.</div>
                 @else
-                    <table class="table table-striped table-hover datatable">
+                    {{-- Mengubah kelas tabel menjadi unik agar tidak bentrok dengan datatable global --}}
+                    <table class="table table-striped table-hover permintaan-barang-table">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">No</th>
@@ -62,7 +63,7 @@
                                             $hasPending = $group['items']->contains('status', 'pending');
                                             $hasApproved = $group['items']->contains('status', 'disetujui');
                                             $hasRejected = $group['items']->contains('status', 'ditolak');
-                                            
+
                                             if ($hasPending) {
                                                 echo '<span class="badge bg-warning">Pending</span>';
                                             } elseif ($hasRejected && !$hasApproved) {
@@ -89,9 +90,53 @@
                         </tbody>
                     </table>
                 @endif
-
             </div>
         </div>
     </div>
 </section>
 @endsection
+
+@push('scripts')
+    {{-- Script untuk menginisialisasi simple-datatables.js dan mengatur default ke 'All' --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Target tabel dengan kelas unik 'permintaan-barang-table'
+            const tableElement = document.querySelector(".permintaan-barang-table");
+            if (typeof simpleDatatables !== 'undefined' && tableElement) {
+                try {
+                    new simpleDatatables.DataTable(tableElement, {
+                        // Mengatur default entries per page menjadi "All"
+                        perPage: -1,
+                        // Mengatur opsi dropdown "entries per page" dengan label "All"
+                        perPageSelect: [10, 25, 50, ["All", -1]],
+                        // Mengatur pengurutan default pada kolom "No" (indeks 0) secara ascending
+                        sort: [0, 'asc'],
+                        columns: [
+                            {
+                                select: 0, // Indeks kolom 'No'
+                                sortable: true,
+                                // Menggunakan sort kustom untuk mengurutkan angka
+                                sort: (a, b) => {
+                                    const valA = parseInt(a.textContent, 10);
+                                    const valB = parseInt(b.textContent, 10);
+                                    if (isNaN(valA) || isNaN(valB)) return 0;
+                                    return valA - valB;
+                                }
+                            },
+                            {
+                                select: 4, // Indeks kolom 'Aksi'
+                                sortable: false // Menonaktifkan pengurutan pada kolom ini
+                            }
+                        ]
+                    });
+                } catch (error) {
+                    console.error("Gagal menginisialisasi Simple-datatables:", error);
+                }
+            } else {
+                console.warn("Simple-datatables tidak ditemukan atau elemen tabel tidak ada.");
+                // Jika simple-datatables.js tidak dimuat, kita bisa menginisialisasi dengan cara lain
+                // atau cukup biarkan tabel tampil secara statis
+            }
+        });
+    </script>
+@endpush
