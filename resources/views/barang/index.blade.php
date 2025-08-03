@@ -41,7 +41,8 @@
                 @if($barangs->isEmpty())
                     <div class="alert alert-info">Belum ada data barang.</div>
                 @else
-                    <table class="table table-striped table-hover datatable">
+                    {{-- Mengubah kelas tabel menjadi unik agar tidak bentrok dengan main.js --}}
+                    <table class="table table-striped table-hover barang-table">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">No</th>
@@ -53,7 +54,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- Memastikan loop berjalan pada variabel $barangs --}}
                             @foreach($barangs as $index => $barang)
                             <tr>
                                 <th scope="row">{{ $index + 1 }}</th>
@@ -63,7 +63,6 @@
                                 <td>{{ $barang->satuan ?? '-' }}</td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        {{-- Sesuai permintaan, tombol detail dihilangkan --}}
                                         <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-warning btn-sm" title="Edit Barang">
                                             <i class="bi bi-pencil"></i>
                                         </a>
@@ -86,3 +85,47 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+    {{-- Script untuk menginisialisasi simple-datatables.js pada tabel dengan kelas baru --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Target tabel dengan kelas unik 'barang-table'
+            const tableElement = document.querySelector(".barang-table");
+            if (typeof simpleDatatables !== 'undefined' && tableElement) {
+                try {
+                    new simpleDatatables.DataTable(tableElement, {
+                        // Mengatur default entries per page menjadi "All"
+                        perPage: -1,
+                        // Mengatur opsi dropdown "entries per page" dengan label "All"
+                        perPageSelect: [10, 25, 50, ["All", -1]],
+                        // MEMPERBAIKI: Mengatur pengurutan default pada kolom "No" (indeks 0) secara ascending
+                        sort: [0, 'asc'],
+                        columns: [
+                            {
+                                select: 0, // Indeks kolom 'No'
+                                sortable: true,
+                                // Menggunakan sort kustom untuk mengurutkan angka
+                                sort: (a, b) => {
+                                    const valA = parseInt(a.textContent, 10);
+                                    const valB = parseInt(b.textContent, 10);
+                                    if (isNaN(valA) || isNaN(valB)) return 0;
+                                    return valA - valB;
+                                }
+                            },
+                            
+                            {
+                                select: 5, // Indeks kolom 'Aksi'
+                                sortable: false // Menonaktifkan pengurutan pada kolom ini
+                            }
+                        ]
+                    });
+                } catch (error) {
+                    console.error("Gagal menginisialisasi Simple-datatables:", error);
+                }
+            } else {
+                console.warn("Simple-datatables tidak ditemukan atau elemen tabel tidak ada.");
+            }
+        });
+    </script>
+@endpush

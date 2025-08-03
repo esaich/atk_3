@@ -66,7 +66,7 @@
 
     <div class="d-flex justify-content-end mt-4 no-print"> {{-- Tambahkan kelas no-print di sini --}}
         <a href="{{ route('payment.index') }}" class="btn btn-secondary me-2">Kembali ke Daftar Pembayaran</a>
-        <button onclick="window.print()" class="btn btn-primary me-2">Cetak Invoice</button>
+        {{-- <button onclick="window.print()" class="btn btn-primary me-2">Cetak Invoice</button> --}}
         {{-- Tombol untuk Download PDF --}}
         <a href="{{ route('payment.downloadPdf', $payment->id) }}" class="btn btn-success">Download PDF</a>
     </div>

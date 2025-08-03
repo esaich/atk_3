@@ -10,6 +10,11 @@
             font-family: 'Arial', sans-serif;
             font-size: 12px;
         }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -22,35 +27,78 @@
         }
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
         h1 {
             text-align: center;
         }
+        /* Style untuk tanda tangan */
+        .signature-table {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse; 
+        }
+        .signature-box {
+            text-align: center;
+            width: 250px;
+            /* Border telah dihapus */
+            padding: 10px;
+            display: inline-block;
+        }
+        .signature-line {
+            margin-top: 60px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
-    <h1>Daftar Barang</h1>
-    <table>
-        <thead>
+    <div class="container">
+        <h1>Daftar Barang</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Barang</th>
+                    <th>Nama Barang</th>
+                    <th>Stok</th>
+                    <th>Satuan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($barangs as $index => $barang)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $barang->kode_barang }}</td>
+                    <td>{{ $barang->nama_barang }}</td>
+                    <td>{{ $barang->stok }}</td>
+                    <td>{{ $barang->satuan }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        {{-- Bagian untuk tanda tangan di pojok kanan bawah --}}
+        <table class="signature-table">
             <tr>
-                <th>No</th>
-                <th>Kode Barang</th>
-                <th>Nama Barang</th>
-                <th>Stok</th>
-                <th>Satuan</th>
+                <td style="text-align: right; border: 1px solid #ddd;">
+                    <div class="signature-box">
+                        <p>Admin Gudang</p>
+                        <div class="signature-line">
+                            <p>( ........................................ )</p>
+                        </div>
+                    </div>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach($barangs as $index => $barang)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $barang->kode_barang }}</td>
-                <td>{{ $barang->nama_barang }}</td>
-                <td>{{ $barang->stok }}</td>
-                <td>{{ $barang->satuan }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+        </table>
+        
+        <div class="footer">
+            Laporan ini dibuat secara otomatis pada {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}.
+        </div>
+    </div>
 </body>
 </html>

@@ -11,9 +11,7 @@
             <li class="breadcrumb-item active">Barang Masuk</li>
         </ol>
     </nav>
-</div><!-- End Page Title -->
-
-<section class="section dashboard">
+</div><section class="section dashboard">
     <div class="row justify-content-center">
         <div class="col-lg-12">
             @if(session('success'))
@@ -76,7 +74,8 @@
                     </div>
                 @else
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover datatable">
+                    {{-- Mengubah kelas tabel menjadi unik agar tidak bentrok dengan main.js --}}
+                    <table class="table table-striped table-hover barang-masuk-table">
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
@@ -120,3 +119,47 @@
     </div>
 </section>
 @endsection
+
+@push('scripts')
+    {{-- Inisialisasi simple-datatables.js untuk tabel 'barang-masuk-table' secara mandiri. --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableElement = document.querySelector(".barang-masuk-table");
+
+            if (typeof simpleDatatables !== 'undefined' && tableElement) {
+                try {
+                    new simpleDatatables.DataTable(tableElement, {
+                        // Mengatur default entries per page menjadi "All"
+                        perPage: -1,
+                        // Mengatur opsi dropdown "entries per page" dengan label "All"
+                        perPageSelect: [10, 25, 50, ["All", -1]],
+                        // Mengatur default pengurutan pada kolom pertama (indeks 0) secara ascending (1, 2, 3...)
+                        sort: [0, 'asc'],
+                        columns: [
+                            { 
+                                select: 0, // Kolom "No"
+                                sortable: true,
+                                // Menggunakan sort kustom untuk mengurutkan angka, bukan teks
+                                sort: (a, b) => {
+                                    const valA = parseInt(a.textContent, 10);
+                                    const valB = parseInt(b.textContent, 10);
+                                    if (isNaN(valA) || isNaN(valB)) return 0;
+                                    return valA - valB;
+                                }
+                            },
+                           
+                            { 
+                                select: 6, // Kolom "Aksi"
+                                sortable: false 
+                            }
+                        ]
+                    });
+                } catch (error) {
+                    console.error("Gagal menginisialisasi Simple-datatables:", error);
+                }
+            } else {
+                console.warn("Simple-datatables tidak ditemukan atau elemen tabel tidak ada.");
+            }
+        });
+    </script>
+@endpush
