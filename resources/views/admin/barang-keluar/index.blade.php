@@ -59,7 +59,7 @@
                             <label for="year" class="form-label">Tahun</label>
                             <select class="form-select" id="year" name="year">
                                 <option value="">-- Pilih Tahun --</option>
-                                @for ($y = Carbon\Carbon::now()->year; $y >= 2020; $y--) {{-- Sesuaikan rentang tahun --}}
+                                @for ($y = Carbon\Carbon::now()->year; $y >= 2020; $y--)
                                     <option value="{{ $y }}" {{ ($filterValues['year'] ?? '') == $y ? 'selected' : '' }}>
                                         {{ $y }}
                                     </option>
@@ -76,13 +76,14 @@
                 @if($barangKeluars->isEmpty())
                     <div class="alert alert-info">Belum ada data barang keluar yang sesuai dengan filter.</div>
                 @else
-                    <table class="table table-striped table-hover datatable">
+                    {{-- Menggunakan kelas unik 'datatable-barang-keluar' untuk inisialisasi terpisah --}}
+                    <table class="table table-striped table-hover datatable-barang-keluar">
                         <thead class="table-light">
                             <tr>
                                 <th scope="col">No</th>
                                 <th scope="col">Nama Barang</th>
                                 <th scope="col">Jumlah Keluar</th>
-                                <th scope="col">User  Divisi</th>
+                                <th scope="col">User Divisi</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Tanggal Keluar</th>
                                 <th scope="col">Keterangan</th>
@@ -103,9 +104,38 @@
                         </tbody>
                     </table>
                 @endif
-
             </div>
         </div>
     </div>
 </section>
 @endsection
+
+{{-- Menggunakan @push() untuk menambahkan skrip khusus pada halaman ini --}}
+@push('scripts')
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const tableElement = document.querySelector(".datatable-barang-keluar");
+        if (typeof simpleDatatables !== 'undefined' && tableElement) {
+            try {
+                new simpleDatatables.DataTable(tableElement, {
+                    // Mengatur opsi default untuk entries per page menjadi "All"
+                    perPage: -1, 
+                    // Menyesuaikan opsi dropdown "entries per page"
+                    perPageSelect: [5, 10, 15, ["All", -1]],
+                    columns: [
+                        {
+                            select: 6, // Indeks kolom 'Keterangan'
+                            sortable: false
+                        }
+                    ]
+                });
+                console.log("Simple-datatables untuk Barang Keluar berhasil diinisialisasi.");
+            } catch (error) {
+                console.error("Gagal menginisialisasi Simple-datatables:", error);
+            }
+        } else {
+            console.warn("Simple-datatables tidak ditemukan atau elemen tabel tidak ada.");
+        }
+    });
+</script>
+@endpush
