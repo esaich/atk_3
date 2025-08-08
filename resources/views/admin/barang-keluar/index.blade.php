@@ -35,7 +35,7 @@
                 {{-- Filter Form --}}
                 <div class="mb-4 p-3 border rounded bg-light">
                     <h5 class="card-title mt-0">Filter Barang Keluar</h5>
-                    <form action="{{ route('admin.barang-keluar.index') }}" method="GET" class="row g-3 align-items-end">
+                    <form id="filter-form" action="{{ route('admin.barang-keluar.index') }}" method="GET" class="row g-3 align-items-end">
                         <div class="col-md-3">
                             <label for="start_date" class="form-label">Dari Tanggal</label>
                             <input type="date" class="form-control" id="start_date" name="start_date" value="{{ $filterValues['start_date'] ?? '' }}">
@@ -66,8 +66,23 @@
                                 @endfor
                             </select>
                         </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Filter</button>
+                        <div class="col-md-3">
+                            <label for="user_id" class="form-label">User Divisi</label>
+                            <select class="form-select" id="user_id" name="user_id">
+                                <option value="">-- Pilih User --</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}" {{ ($filterValues['user_id'] ?? '') == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            {{-- Tombol Cetak PDF. URL akan dibuat via JavaScript --}}
+                            <a href="#" id="cetak-pdf-btn" class="btn btn-danger"><i class="bi bi-file-pdf"></i> Cetak PDF</a>
                         </div>
                     </form>
                 </div>
@@ -91,15 +106,15 @@
                         </thead>
                         <tbody>
                             @foreach($barangKeluars as $index => $keluar)
-                            <tr>
-                                <th scope="row">{{ $index + 1 }}</th>
-                                <td>{{ $keluar->barang->nama_barang ?? '-' }}</td>
-                                <td>{{ $keluar->jumlah_keluar }}</td>
-                                <td>{{ $keluar->permintaan->user->name ?? '-' }}</td>
-                                <td>{{ $keluar->permintaan->user->email ?? '-' }}</td>
-                                <td>{{ \Carbon\Carbon::parse($keluar->tanggal_keluar)->format('d-m-Y H:i') }}</td>
-                                <td>{{ $keluar->keterangan ?? '-' }}</td>
-                            </tr>
+                                <tr>
+                                    <th scope="row">{{ $index + 1 }}</th>
+                                    <td>{{ $keluar->barang->nama_barang ?? '-' }}</td>
+                                    <td>{{ $keluar->jumlah_keluar }}</td>
+                                    <td>{{ $keluar->permintaan->user->name ?? '-' }}</td>
+                                    <td>{{ $keluar->permintaan->user->email ?? '-' }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($keluar->tanggal_keluar)->format('d-m-Y H:i') }}</td>
+                                    <td>{{ $keluar->keterangan ?? '-' }}</td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -136,6 +151,22 @@
         } else {
             console.warn("Simple-datatables tidak ditemukan atau elemen tabel tidak ada.");
         }
+
+        // Logika untuk tombol Cetak PDF
+        const filterForm = document.getElementById('filter-form');
+        const cetakPdfBtn = document.getElementById('cetak-pdf-btn');
+
+        function updatePdfButtonUrl() {
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+            cetakPdfBtn.href = "{{ route('admin.barang-keluar.cetak.pdf') }}?" + params.toString();
+        }
+
+        // Perbarui URL tombol saat halaman dimuat
+        updatePdfButtonUrl();
+
+        // Perbarui URL tombol setiap kali ada perubahan pada form
+        filterForm.addEventListener('change', updatePdfButtonUrl);
     });
 </script>
 @endpush

@@ -11,7 +11,8 @@
             <li class="breadcrumb-item active">Barang Masuk</li>
         </ol>
     </nav>
-</div><section class="section dashboard">
+</div>
+<section class="section dashboard">
     <div class="row justify-content-center">
         <div class="col-lg-12">
             @if(session('success'))
@@ -56,8 +57,28 @@
                                 @endfor
                             </select>
                         </div>
+                        {{-- Field Filter Supplier BARU - Mengikuti layout contoh --}}
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Filter</button>
+                            <label for="supplier_id" class="form-label">Supplier</label>
+                            <select class="form-select" id="supplier_id" name="supplier_id">
+                                <option value="">-- Semua Supplier --</option>
+                                {{-- Loop untuk menampilkan supplier, variabel $suppliers harus disediakan dari controller --}}
+                                @foreach ($suppliers as $supplier)
+                                    <option value="{{ $supplier->id }}" {{ ($filterValues['supplier_id'] ?? '') == $supplier->id ? 'selected' : '' }}>
+                                        {{ $supplier->nama_supplier }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        {{-- Tombol Filter dan Unduh PDF BARU - Mengikuti layout contoh --}}
+                        <div class="col-md-2 d-grid">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            {{-- URL Cetak PDF dibuat dengan parameter filter saat ini --}}
+                            <a href="{{ route('barang-masuk.downloadPdf', array_filter($filterValues)) }}" class="btn btn-danger">
+                                <i class="bi bi-file-earmark-pdf"></i> Unduh PDF
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -147,7 +168,7 @@
                                     return valA - valB;
                                 }
                             },
-                           
+                            
                             { 
                                 select: 6, // Kolom "Aksi"
                                 sortable: false 

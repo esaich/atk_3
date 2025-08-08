@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BarangMasukController extends Controller
 {
@@ -28,6 +29,9 @@ class BarangMasukController extends Controller
      */
     public function index(Request $request)
     {
+        // Mengambil semua data supplier untuk dropdown filter
+        $suppliers = Supplier::all();
+
         $query = BarangMasuk::with('barang', 'supplier');
 
         // Menerapkan filter berdasarkan parameter request
@@ -46,14 +50,19 @@ class BarangMasukController extends Controller
         if ($request->filled('year')) {
             $query->whereYear('tanggal_masuk', $request->year);
         }
+        
+        // --- LOGIKA BARU: Filter berdasarkan supplier_id ---
+        if ($request->filled('supplier_id')) {
+            $query->where('supplier_id', $request->supplier_id);
+        }
 
         // Urutkan berdasarkan tanggal masuk terbaru
         $barangMasuks = $query->orderBy('tanggal_masuk', 'desc')->get();
 
         // Mengirimkan nilai filter kembali ke view untuk mengisi form
-        $filterValues = $request->only(['start_date', 'end_date', 'month', 'year']);
+        $filterValues = $request->only(['start_date', 'end_date', 'month', 'year', 'supplier_id']);
 
-        return view('barang-masuk.index', compact('barangMasuks', 'filterValues'));
+        return view('barang-masuk.index', compact('barangMasuks', 'filterValues', 'suppliers'));
     }
 
     /**
@@ -236,5 +245,55 @@ class BarangMasukController extends Controller
             Log::error('Error saat menghapus barang masuk atau memperbarui payment: ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        // Mengambil nilai filter dari request
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $month = $request->input('month');
+        $year = $request->input('year');
+        $supplierId = $request->input('supplier_id');
+
+        // Memulai query dengan eager loading
+        $query = BarangMasuk::with(['barang', 'supplier']);
+
+        // Menerapkan filter yang sama seperti di metode index
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal_masuk', [$startDate, $endDate]);
+        } elseif ($month && $year) {
+            $query->whereMonth('tanggal_masuk', $month)
+                  ->whereYear('tanggal_masuk', $year);
+        }
+
+        if ($supplierId) {
+            $query->where('supplier_id', $supplierId);
+        }
+
+        // Mengambil data barang masuk yang sudah difilter
+        $barangMasuks = $query->orderBy('tanggal_masuk', 'desc')->get();
+
+        // Mengambil nama supplier jika ada, untuk judul PDF
+        $supplierName = $supplierId ? Supplier::find($supplierId)->nama_supplier : 'Semua Supplier';
+
+        // Data yang akan dilewatkan ke view PDF
+        $data = [
+            'barangMasuks' => $barangMasuks,
+            'filterValues' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'month' => $month,
+                'year' => $year,
+                'supplier_id' => $supplierId
+            ],
+            'supplierName' => $supplierName
+        ];
+
+        // Buat PDF dari tampilan 'barang-masuk.pdf-cetak'
+        $pdf = Pdf::loadView('barang-masuk.pdf-cetak', $data);
+
+        // Mengunduh PDF
+        return $pdf->download('laporan-barang-masuk-' . Carbon::now()->format('Ymd') . '.pdf');
     }
 }
