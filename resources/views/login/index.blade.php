@@ -107,7 +107,7 @@
         <img src="{{ asset('assets/img/Kerawang.png') }}" alt="Logo" class="login-logo" />
 
         <h2 class="login-title">Sign in</h2>
-        <p class="text-center text-muted mb-4">to continue to Inventory App</p>
+        <p class="text-center text-muted mb-4">To Continue to ATK App</p>
 
         @if ($errors->any())
             <div class="alert alert-danger">
