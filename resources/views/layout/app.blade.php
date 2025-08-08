@@ -72,16 +72,14 @@
                                 </a>
                             </li>
                         @elseif(Auth::user()->role === 'divisi')
-                            {{-- Baris ini dihapus karena rute divisi.settings.index tidak ada di routes/web.php --}}
-                            {{-- Jika Anda ingin menambahkan rute ini, Anda harus mendefinisikannya terlebih dahulu di file routes/web.php --}}
-                            <!--
+                           
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="{{ route('divisi.settings.index') }}">
                                     <i class="bi bi-person-gear"></i>
                                     <span>Pengaturan Akun</span>
                                 </a>
                             </li>
-                            -->
+                            
                         @endif
                         <li>
                             <hr class="dropdown-divider">

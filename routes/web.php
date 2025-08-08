@@ -103,7 +103,6 @@ Route::middleware(['auth', RoleMiddleware::class . ':divisi'])
         // Rute untuk Pengaturan Akun Divisi
         Route::get('/settings', [DivisiController::class, 'showSettingsForm'])->name('settings.index');
         Route::put('/settings', [DivisiController::class, 'updateSettings'])->name('settings.update');
-
     });
 
 // Logout

@@ -23,66 +23,64 @@
             @endif
 
             <div class="card p-4">
-                {{-- Filter Form --}}
-                <div class="mb-4 p-3 border rounded bg-light">
-                    <h5 class="card-title mt-0">Filter Barang Masuk</h5>
-                    <form action="{{ route('barang-masuk.index') }}" method="GET" class="row g-3 align-items-end">
-                        <div class="col-md-3">
-                            <label for="start_date" class="form-label">Dari Tanggal</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ $filterValues['start_date'] ?? '' }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="end_date" class="form-label">Sampai Tanggal</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ $filterValues['end_date'] ?? '' }}">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="month" class="form-label">Bulan</label>
-                            <select class="form-select" id="month" name="month">
-                                <option value="">-- Pilih Bulan --</option>
-                                @for ($m = 1; $m <= 12; $m++)
-                                    <option value="{{ $m }}" {{ ($filterValues['month'] ?? '') == $m ? 'selected' : '' }}>
-                                        {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="year" class="form-label">Tahun</label>
-                            <select class="form-select" id="year" name="year">
-                                <option value="">-- Pilih Tahun --</option>
-                                @for ($y = Carbon\Carbon::now()->year; $y >= 2020; $y--)
-                                    <option value="{{ $y }}" {{ ($filterValues['year'] ?? '') == $y ? 'selected' : '' }}>
-                                        {{ $y }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-                        {{-- Field Filter Supplier BARU - Mengikuti layout contoh --}}
-                        <div class="col-md-2">
-                            <label for="supplier_id" class="form-label">Supplier</label>
-                            <select class="form-select" id="supplier_id" name="supplier_id">
-                                <option value="">-- Semua Supplier --</option>
-                                {{-- Loop untuk menampilkan supplier, variabel $suppliers harus disediakan dari controller --}}
-                                @foreach ($suppliers as $supplier)
-                                    <option value="{{ $supplier->id }}" {{ ($filterValues['supplier_id'] ?? '') == $supplier->id ? 'selected' : '' }}>
-                                        {{ $supplier->nama_supplier }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        {{-- Tombol Filter dan Unduh PDF BARU - Mengikuti layout contoh --}}
-                        <div class="col-md-2 d-grid">
-                            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
-                        </div>
-                        <div class="col-md-2 d-grid">
-                            {{-- URL Cetak PDF dibuat dengan parameter filter saat ini --}}
-                            <a href="{{ route('barang-masuk.downloadPdf', array_filter($filterValues)) }}" class="btn btn-danger">
-                                <i class="bi bi-file-earmark-pdf"></i> Unduh PDF
-                            </a>
-                        </div>
-                    </form>
-                </div>
-                {{-- End Filter Form --}}
+              {{-- Filter Form --}}
+<div class="mb-4 p-3 border rounded bg-light">
+    <h5 class="card-title mt-0">Filter Barang Masuk</h5>
+    <form id="filter-form" action="{{ route('barang-masuk.index') }}" method="GET" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label for="start_date" class="form-label">Dari Tanggal</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ $filterValues['start_date'] ?? '' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="end_date" class="form-label">Sampai Tanggal</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ $filterValues['end_date'] ?? '' }}">
+        </div>
+        <div class="col-md-2">
+            <label for="month" class="form-label">Bulan</label>
+            <select class="form-select" id="month" name="month">
+                <option value="">-- Pilih Bulan --</option>
+                @for ($m = 1; $m <= 12; $m++)
+                    <option value="{{ $m }}" {{ ($filterValues['month'] ?? '') == $m ? 'selected' : '' }}>
+                        {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                    </option>
+                @endfor
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="year" class="form-label">Tahun</label>
+            <select class="form-select" id="year" name="year">
+                <option value="">-- Pilih Tahun --</option>
+                @for ($y = Carbon\Carbon::now()->year; $y >= 2020; $y--)
+                    <option value="{{ $y }}" {{ ($filterValues['year'] ?? '') == $y ? 'selected' : '' }}>
+                        {{ $y }}
+                    </option>
+                @endfor
+            </select>
+        </div>
+                    {{-- Field Filter Supplier sekarang menggunakan col-md-3 untuk menyelaraskan dengan layout Barang Keluar --}}
+                            <div class="col-md-3">
+                                <label for="supplier_id" class="form-label">Supplier</label>
+                                <select class="form-select" id="supplier_id" name="supplier_id">
+                                    <option value="">-- Semua Supplier --</option>
+                                    @foreach ($suppliers as $supplier)
+                                        <option value="{{ $supplier->id }}" {{ ($filterValues['supplier_id'] ?? '') == $supplier->id ? 'selected' : '' }}>
+                                            {{ $supplier->nama_supplier }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            {{-- Tombol Filter dan Cetak PDF sekarang menggunakan col-md-2 untuk menyelaraskan layout --}}
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                {{-- Tombol Cetak PDF. URL akan dibuat via JavaScript --}}
+                                <a href="#" id="cetak-pdf-btn-masuk" class="btn btn-danger"><i class="bi bi-file-pdf"></i> Cetak PDF</a>
+                            </div>
+                        </form>
+                    </div>
+                    {{-- End Filter Form --}}
+
                 
                 <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
                     <h5 class="card-title mb-0">Data Barang Masuk</h5>

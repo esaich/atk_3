@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,17 +11,21 @@ use Illuminate\Validation\ValidationException;
 class DivisiController extends Controller
 {
     /**
-     * Menampilkan dashboard untuk user divisi.
+     * Tampilkan dashboard divisi.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\View\View
      */
     public function index()
     {
-        return view('divisi.dashboard');
+        // Mendapatkan data user yang sedang login
+        $user = Auth::user();
+
+        // Mengirim data user ke view
+        return view('divisi.dashboard', compact('user'));
     }
 
     /**
-     * Menampilkan formulir pengaturan akun (khususnya untuk ubah password).
+     * Tampilkan formulir pengaturan akun untuk divisi.
      *
      * @return \Illuminate\View\View
      */
@@ -30,62 +35,66 @@ class DivisiController extends Controller
     }
 
     /**
-     * Memproses permintaan untuk memperbarui kata sandi user divisi.
+     * Perbarui kata sandi dan/atau email pengguna divisi.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function updatePassword(Request $request)
+    public function updateSettings(Request $request)
     {
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|string|min:8|confirmed',
-        ]);
-
         $user = Auth::user();
+        $rules = [];
+        $messages = [];
 
-        if (!Hash::check($request->current_password, $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => ['Kata sandi saat ini tidak cocok.'],
+        // Validasi kondisional untuk kata sandi
+        if ($request->filled('new_password') || $request->filled('current_password') || $request->filled('new_password_confirmation')) {
+            $rules = array_merge($rules, [
+                'current_password' => ['required', function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+                        $fail('Kata sandi yang Anda masukkan tidak cocok dengan kata sandi saat ini.');
+                    }
+                }],
+                'new_password' => 'required|min:8|confirmed',
+            ]);
+            $messages = array_merge($messages, [
+                'current_password.required' => 'Kata sandi saat ini harus diisi.',
+                'new_password.required' => 'Kata sandi baru harus diisi.',
+                'new_password.min' => 'Kata sandi baru minimal 8 karakter.',
+                'new_password.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
             ]);
         }
 
-        $user->password = Hash::make($request->new_password);
-        $user->save();
+        // Validasi kondisional untuk email
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $rules = array_merge($rules, [
+                'email' => 'required|email|unique:users,email,' . $user->id,
+            ]);
+            $messages = array_merge($messages, [
+                'email.required' => 'Alamat email harus diisi.',
+                'email.email' => 'Format alamat email tidak valid.',
+                'email.unique' => 'Alamat email ini sudah digunakan.',
+            ]);
+        }
 
-        return redirect()->route('divisi.settings.password')->with('success', 'Kata sandi berhasil diperbarui.');
-    }
+        // Jika tidak ada data yang akan diperbarui
+        if (empty($rules)) {
+            return redirect()->back()->with('success', 'Tidak ada perubahan yang dilakukan.');
+        }
 
-    /**
-     * Menampilkan formulir untuk mengubah email user divisi.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function showEmailForm()
-    {
-        return view('divisi.email_settings');
-    }
-
-    /**
-     * Memproses permintaan untuk memperbarui email user divisi.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
-     */
-    public function updateEmail(Request $request)
-    {
-        $user = Auth::user();
-
-        // Validasi input email
-        $request->validate([
-            'email' => 'required|email|unique:users,email,' . $user->id,
-        ]);
+        $request->validate($rules, $messages);
         
-        $user->email = $request->email;
+        // Memperbarui kata sandi jika diisi
+        if ($request->filled('new_password')) {
+            $user->password = Hash::make($request->new_password);
+        }
+
+        // Memperbarui email jika diisi
+        if ($request->filled('email') && $request->email !== $user->email) {
+            $user->email = $request->email;
+        }
+
         $user->save();
 
-        return redirect()->route('divisi.settings.email')->with('success', 'Email berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Pengaturan akun berhasil diperbarui.');
     }
 }
