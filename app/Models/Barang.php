@@ -10,11 +10,6 @@ class Barang extends Model
     // Hapus 'supplier_id' dan 'keterangan' dari $fillable
     protected $fillable = ['kode_barang', 'nama_barang', 'stok', 'satuan']; 
 
-    // Hapus relasi supplier() karena kolom supplier_id sudah tidak ada
-    // public function supplier()
-    // {
-    //     return $this->belongsTo(Supplier::class);
-    // }
 
     public function permintaanBarang()
     {

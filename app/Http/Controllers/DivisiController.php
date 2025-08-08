@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\PermintaanBarang; // Ganti dengan nama model yang benar
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,8 +21,18 @@ class DivisiController extends Controller
         // Mendapatkan data user yang sedang login
         $user = Auth::user();
 
-        // Mengirim data user ke view
-        return view('divisi.dashboard', compact('user'));
+        // Mendapatkan statistik permintaan barang untuk user yang sedang login
+        // Menggunakan model PermintaanBarang yang benar
+        $totalPermintaanUser = PermintaanBarang::where('user_id', $user->id)->count();
+        $permintaanMenunggu = PermintaanBarang::where('user_id', $user->id)
+                                             ->where('status', 'pending')
+                                             ->count();
+        $permintaanSelesai = PermintaanBarang::where('user_id', $user->id)
+                                             ->where('status', 'disetujui')
+                                             ->count();
+
+        // Mengirim data user dan statistik ke view
+        return view('divisi.dashboard', compact('user', 'totalPermintaanUser', 'permintaanMenunggu', 'permintaanSelesai'));
     }
 
     /**
