@@ -9,8 +9,8 @@
     <meta content="" name="keywords">
 
     {{-- Favicons --}}
-    <link href="{{ asset('assets/img/Kerawang.png') }}" rel="icon">
-    <link href="{{ asset('assets/img/Kerawang.png') }}" rel="apple-touch-icon">
+    {{-- <link href="{{ asset('assets/img/Kerawang.png') }}" rel="icon">
+    <link href="{{ asset('assets/img/Kerawang.png') }}" rel="apple-touch-icon"> --}}
 
     {{-- Google Fonts --}}
     <link href="https://fonts.gstatic.com" rel="preconnect">
