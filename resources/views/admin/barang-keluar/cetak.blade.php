@@ -37,20 +37,23 @@
             background-color: #f2f2f2;
         }
         .signature-section {
-            /* Posisikan di pojok kanan bawah */
-            position: absolute;
-            right: 20px;
-            bottom: 20px;
+            /* Hapus penempatan absolut */
+            margin-top: 50px; /* Tambahkan jarak dari tabel */
             width: 250px;
             text-align: center;
-            /* Tambahkan border tipis di sini */
             border: 1px solid #ddd; 
             padding: 10px;
+            float: right; /* Tempatkan di kanan setelah tabel */
         }
         .signature-name {
-            /* Hapus garis bawah */
             margin-top: 60px; 
             padding-bottom: 5px;
+        }
+        .signature-section p {
+            margin: 0;
+        }
+        .clear {
+            clear: both;
         }
     </style>
 </head>
@@ -95,9 +98,12 @@
         </table>
     </div>
 
-    <div class="signature-section">
-        <p>Admin Gudang</p>
-        <div class="signature-name">( ....................................... )</div>
+     <div class="signature-section">
+            <p>Admin Gudang</p>
+            <div class="signature-name">( ....................................... )</div>
+        </div>
+        <div class="clear"></div>
+
     </div>
 </body>
 </html>
