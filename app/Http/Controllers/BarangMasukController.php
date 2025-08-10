@@ -171,7 +171,12 @@ class BarangMasukController extends Controller
                                  ->first();
             if ($oldPayment) {
                 $oldPayment->total_harga -= $oldSubTotal;
-                $oldPayment->save();
+                // LOGIKA BARU: Hapus payment jika total harga menjadi <= 0
+                if ($oldPayment->total_harga <= 0) {
+                    $oldPayment->delete();
+                } else {
+                    $oldPayment->save();
+                }
             }
 
             $barangMasukData = $validatedData;
@@ -226,9 +231,16 @@ class BarangMasukController extends Controller
             $payment = Payment::where('supplier_id', $barangMasuk->supplier_id)
                              ->where('tanggal_bayar', $barangMasuk->tanggal_masuk->format('Y-m-d'))
                              ->first();
+            
             if ($payment) {
                 $payment->total_harga -= $subTotalToDelete;
-                $payment->save();
+                
+                // LOGIKA BARU: Hapus record pembayaran jika totalnya menjadi <= 0
+                if ($payment->total_harga <= 0) {
+                    $payment->delete();
+                } else {
+                    $payment->save();
+                }
             }
 
             $barang = Barang::findOrFail($barangMasuk->barang_id);
