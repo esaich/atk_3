@@ -9,10 +9,12 @@ use Illuminate\Validation\Rule;
 
 class DivisiUserController extends Controller
 {
-    // Tampilkan daftar user divisi dengan pagination
+    // Tampilkan daftar user divisi tanpa pagination
     public function index()
     {
-        $divisis = User::where('role', 'divisi')->paginate(10);
+        // PERBAIKAN: Mengambil semua data user dengan role 'divisi' menggunakan ->get()
+        // Ini memastikan simple-datatables dapat menampilkan semua data dan mengelola paginationnya sendiri.
+        $divisis = User::where('role', 'divisi')->get();
         return view('tambah-user-divisi.index', compact('divisis'));
     }
 
