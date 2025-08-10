@@ -29,7 +29,7 @@
             background-color: #f2f2f2;
             font-weight: bold;
         }
-        h1 {
+        .center {
             text-align: center;
         }
         /* Style untuk tanda tangan */
@@ -57,8 +57,9 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container center">
         <h1>Daftar Barang</h1>
+        <p>Dicetak pada: {{ \Carbon\Carbon::now()->translatedFormat('d-m-Y') }}</p>
         <table>
             <thead>
                 <tr>
@@ -96,9 +97,9 @@
             </tr>
         </table>
         
-        <div class="footer">
-            Laporan ini dibuat secara otomatis pada {{ \Carbon\Carbon::now()->format('d-m-Y H:i:s') }}.
-        </div>
+        {{-- <div class="footer">
+            Laporan ini dibuat secara otomatis pada {{ \Carbon\Carbon::now()->format('d-m-Y') }}.
+        </div> --}}
     </div>
 </body>
 </html>

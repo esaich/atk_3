@@ -49,12 +49,12 @@
             margin-top: 50px; /* Tambahkan jarak dari tabel */
             width: 250px;
             text-align: center;
-            border: 1px solid #ddd; 
+            border: 1px solid #ddd;
             padding: 10px;
             float: right; /* Tempatkan di kanan setelah tabel */
         }
         .signature-name {
-            margin-top: 60px; 
+            margin-top: 60px;
             padding-bottom: 5px;
         }
         .signature-section p {
@@ -62,6 +62,13 @@
         }
         .clear {
             clear: both;
+        }
+
+         .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: #777;
         }
     </style>
 </head>
@@ -94,8 +101,9 @@
                     @foreach ($barangMasuks as $index => $item)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $item->barang->nama_barang }}</td>
-                            <td>{{ $item->supplier->nama_supplier }}</td>
+                            {{-- PERBAIKAN: Menambahkan operator null coalescing ?? '-' --}}
+                            <td>{{ $item->barang->nama_barang ?? '-' }}</td>
+                            <td>{{ $item->supplier->nama_supplier ?? '-' }}</td>
                             <td>{{ $item->jumlah_masuk }}</td>
                             <td>Rp. {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                             <td>Rp. {{ number_format($item->jumlah_masuk * $item->harga_satuan, 0, ',', '.') }}</td>
@@ -124,6 +132,9 @@
         </div>
         <div class="clear"></div>
 
+        <div class="footer">
+            Laporan ini dibuat secara otomatis pada {{ \Carbon\Carbon::now()->format('d-m-Y') }}.
+        </div>
     </div>
 
 </body>

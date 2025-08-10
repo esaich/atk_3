@@ -60,7 +60,7 @@
 <body>
     <div class="header">
         <h1>Laporan Barang Keluar</h1>
-        <p>Dicetak pada: {{ \Carbon\Carbon::now()->translatedFormat('d F Y H:i:s') }}</p>
+        <p>Dicetak pada: {{ \Carbon\Carbon::now()->translatedFormat('d-m-Y') }}</p>
     </div>
 
     <div class="table-container">
@@ -89,7 +89,7 @@
                             <td>{{ $keluar->jumlah_keluar }}</td>
                             <td>{{ $keluar->permintaan->user->name ?? '-' }}</td>
                             <td>{{ $keluar->permintaan->user->email ?? '-' }}</td>
-                            <td>{{ \Carbon\Carbon::parse($keluar->tanggal_keluar)->format('d-m-Y H:i') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($keluar->tanggal_keluar)->format('d-m-Y') }}</td>
                             <td>{{ $keluar->keterangan ?? '-' }}</td>
                         </tr>
                     @endforeach

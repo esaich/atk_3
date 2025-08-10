@@ -65,6 +65,13 @@
             padding: 0;
             line-height: 1.5;
         }
+
+         .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
@@ -129,5 +136,9 @@
             </td>
         </tr>
     </table>
+
+     <div class="footer">
+            Laporan ini dibuat secara otomatis pada {{ \Carbon\Carbon::now()->format('d-m-Y') }}.
+        </div>
 </body>
 </html>
