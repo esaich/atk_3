@@ -394,8 +394,3 @@ Pola "fitur inti dulu → dipakai → dievaluasi → direvisi/ditambah fitur bar
 6. **Sprint Retrospective** — evaluasi apa yang perlu diperbaiki di sprint berikutnya (tercermin dari migration-migration revisi di atas).
 7. **Iterasi berulang** hingga seluruh backlog selesai, dengan kemungkinan requirement berubah di tengah jalan (misalnya penambahan modul Pengadaan Barang setelah modul inti berjalan).
 
-### Ringkasan untuk Laporan/Skripsi
-
-> Pengembangan sistem ini menggunakan metodologi **Agile**, dengan pendekatan iteratif dan inkremental. Setiap fitur dikembangkan dalam siklus kecil (sprint) yang mencakup analisis kebutuhan, implementasi, dan pengujian, sehingga memungkinkan penyesuaian desain database maupun alur bisnis berdasarkan hasil evaluasi pada tahap sebelumnya — terlihat dari beberapa revisi struktur tabel yang dilakukan setelah fitur terkait diimplementasikan dan diuji.
-
-Silakan sesuaikan jumlah sprint dan durasinya dengan proses pengerjaan kamu yang sebenarnya (berapa minggu/bulan total, dikerjakan sendiri atau tim).
