@@ -12,8 +12,10 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
+        // Root path sengaja redirect ke /login (lihat routes/web.php),
+        // jadi status yang benar adalah 302, bukan 200.
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect('/login');
     }
 }
