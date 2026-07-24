@@ -104,7 +104,7 @@
     <div class="login-card">
 
         <!-- Logo -->
-        <img src="{{ asset('assets/img/Kerawang.png') }}" alt="Logo" class="login-logo" />
+        <img src="{{ asset('assets/img/logos.jpg') }}" alt="Logo" class="login-logo" />
 
         <h2 class="login-title">Sign in</h2>
         <p class="text-center text-muted mb-4">To Continue to ATK App</p>

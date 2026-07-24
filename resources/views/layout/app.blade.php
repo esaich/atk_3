@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>Disperindag - @yield('title')</title>
+    <title>CV - @yield('title')</title>
     <meta content="" name="description">
     <meta content="" name="keywords">
 
@@ -35,8 +35,8 @@
     <header id="header" class="header fixed-top d-flex align-items-center">
         <div class="d-flex align-items-center justify-content-between">
             <a href="{{ url('/') }}" class="logo d-flex align-items-center">
-                <img src="{{ asset('assets/img/Kerawang.png') }}" alt="">
-                <span class="d-none d-lg-block">Disperindag</span>
+                <img src="{{ asset('assets/img/logos.jpg') }}" alt="">
+                <span class="d-none d-lg-block">CV ABC</span>
             </a>
             <i class="bi bi-list toggle-sidebar-btn"></i>
         </div>
@@ -189,10 +189,10 @@
     {{-- ======= Footer ======= --}}
     <footer id="footer" class="footer">
         <div class="copyright">
-            &copy; Copyright <strong><span>Disperindag</span></strong>. All Rights Reserved
+            &copy; Copyright <strong><span>CV ABC</span></strong>. All Rights Reserved
         </div>
         <div class="credits">
-            Designed by <a href="#">BootstrapMade</a>
+            Designed by <a href="#">Said Hamzah</a>
         </div>
     </footer>
 
