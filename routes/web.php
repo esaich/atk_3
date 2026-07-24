@@ -14,12 +14,25 @@ use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\PermintaanAdminController; 
 use App\Http\Controllers\PermintaanBarangController; 
 use App\Http\Controllers\PengadaanBarangController; 
+use App\Http\Controllers\ForgotPasswordController;
 
 Route::redirect('/', '/login'); // Redirect to login
 
 // Login Page
 Route::get('/login', [SesiController::class, 'index'])->name('login');
 Route::post('/login', [SesiController::class, 'login']);
+
+// Forgot Password (OTP via email)
+Route::middleware('throttle:6,1')->group(function () {
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp'])->name('password.send-otp');
+
+    Route::get('/forgot-password/otp', [ForgotPasswordController::class, 'showOtpForm'])->name('password.otp.form');
+    Route::post('/forgot-password/otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
+
+    Route::get('/forgot-password/reset', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
+    Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+});
 
 // Admin middleware group
 Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function () {
