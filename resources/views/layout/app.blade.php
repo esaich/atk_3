@@ -27,25 +27,39 @@
 
     {{-- Template Main CSS File --}}
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+
+    <style>
+        .header .toggle-sidebar-btn {
+            font-size: 28px;
+            cursor: pointer;
+            color: #012970;
+            margin-right: 15px;
+        }
+
+        .header .brand-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--bs-primary, #012970);
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 
 <body>
 
     {{-- ======= Header ======= --}}
     <header id="header" class="header fixed-top d-flex align-items-center">
-        <div class="d-flex align-items-center justify-content-between">
-            <a href="{{ url('/') }}" class="logo d-flex align-items-center">
-                <img src="{{ asset('assets/img/logos.jpg') }}" alt="">
-                <span class="d-none d-lg-block">CV ABC</span>
-            </a>
+        <div class="d-flex align-items-center">
             <i class="bi bi-list toggle-sidebar-btn"></i>
+            <span class="brand-text d-none d-lg-block">CV BERKAH ADITYA JAYA</span>
         </div>
 
         <nav class="header-nav ms-auto">
             <ul class="d-flex align-items-center">
 
                 <li class="nav-item d-block d-lg-none">
-                    <a class="nav-link nav-icon search-bar-toggle " href="#">
+                    <a class="nav-link nav-icon search-bar-toggle" href="#">
                         <i class="bi bi-search"></i>
                     </a>
                 </li>
@@ -60,10 +74,8 @@
                             <h6>{{ Auth::user()->name }}</h6>
                             <span>{{ Auth::user()->role }}</span>
                         </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        {{-- Tautan untuk Pengaturan Akun, disesuaikan untuk peran user --}}
+                        <li><hr class="dropdown-divider"></li>
+
                         @if(Auth::user()->role === 'admin')
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="{{ route('admin.settings.index') }}">
@@ -72,18 +84,15 @@
                                 </a>
                             </li>
                         @elseif(Auth::user()->role === 'divisi')
-                           
                             <li>
                                 <a class="dropdown-item d-flex align-items-center" href="{{ route('divisi.settings.index') }}">
                                     <i class="bi bi-person-gear"></i>
                                     <span>Pengaturan Akun</span>
                                 </a>
                             </li>
-                            
                         @endif
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item d-flex align-items-center" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                 <i class="bi bi-box-arrow-right"></i>
@@ -100,87 +109,11 @@
     </header>
 
     {{-- ======= Sidebar ======= --}}
-    <aside id="sidebar" class="sidebar">
-        <ul class="sidebar-nav" id="sidebar-nav">
-            @if(Auth::user()->role === 'admin')
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin.dashboard') }}">
-                        <i class="bi bi-grid"></i>
-                        <span>Dashboard Admin</span>
-                    </a>
-                </li>
-
-                <li class="nav-heading">MANAJEMEN GUDANG</li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('barang.index') }}">
-                        <i class="bi bi-box"></i>
-                        <span>Barang</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('barang-masuk.index') }}">
-                        <i class="bi bi-box-arrow-in-left"></i>
-                        <span>Barang Masuk</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin.barang-keluar.index') }}">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Barang Keluar</span>
-                    </a>
-                </li>
-
-                <li class="nav-heading">TRANSAKSI</li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('supplier.index') }}">
-                        <i class="bi bi-truck"></i>
-                        <span>Supplier</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('payment.index') }}">
-                        <i class="bi bi-currency-dollar"></i>
-                        <span>Pembayaran</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('pengadaan.index') }}">
-                        <i class="bi bi-clipboard-check"></i>
-                        <span>Pengadaan Barang</span>
-                    </a>
-                </li>
-
-                <li class="nav-heading">PENGGUNA & PERMINTAAN</li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin.divisi.index') }}">
-                        <i class="bi bi-people"></i>
-                        <span>Manajemen Divisi</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('admin.permintaan.index') }}">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <span>Daftar Permintaan</span>
-                    </a>
-                </li>
-
-            @elseif(Auth::user()->role === 'divisi')
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('divisi.dashboard') }}">
-                        <i class="bi bi-grid"></i>
-                        <span>Dashboard Divisi</span>
-                    </a>
-                </li>
-                {{-- Tambahkan menu divisi lainnya di sini --}}
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="{{ route('divisi.permintaan-barang.index') }}">
-                        <i class="bi bi-basket"></i>
-                        <span>Permintaan Barang</span>
-                    </a>
-                </li>
-            @endif
-        </ul>
-    </aside>
+    @if(Auth::user()->role === 'admin')
+        @include('layout.sidebar_admin')
+    @elseif(Auth::user()->role === 'divisi')
+        @include('layout.sidebar_divisi')
+    @endif
 
     <main id="main" class="main">
         @yield('content')
@@ -189,7 +122,7 @@
     {{-- ======= Footer ======= --}}
     <footer id="footer" class="footer">
         <div class="copyright">
-            &copy; Copyright <strong><span>CV ABC</span></strong>. All Rights Reserved
+            &copy; Copyright <strong><span>CV BERKAH ADITYA JAYA</span></strong>. All Rights Reserved
         </div>
         <div class="credits">
             Designed by <a href="#">Said Hamzah</a>
@@ -210,7 +143,6 @@
 
     {{-- Template Main JS File --}}
     <script src="{{ asset('assets/js/main.js') }}"></script>
-    {{-- Ini adalah baris yang hilang --}}
     @stack('scripts')
 
 </body>

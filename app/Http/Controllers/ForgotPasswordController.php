@@ -28,15 +28,48 @@ class ForgotPasswordController
             'email' => 'required|email',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $this->generateAndSendOtp($request->email);
 
-        // Pesan generik walau email tidak ditemukan, biar tidak bisa dipakai
-        // buat menebak-nebak email mana saja yang terdaftar (email enumeration).
-        if (! $user) {
-            return back()->with('status', 'Jika email terdaftar, kode OTP telah dikirim.');
+        // Selalu simpan email yang diinput & redirect ke halaman OTP yang sama,
+        // baik email valid maupun tidak — supaya attacker tidak bisa
+        // membedakan lewat behavior redirect, bukan cuma lewat teks pesan.
+        session(['otp_email' => $request->email]);
+
+        return redirect()->route('password.otp.form')
+            ->with('status', 'Jika email terdaftar, kode OTP telah dikirim.');
+    }
+
+    /**
+     * Kirim ulang OTP menggunakan email yang sudah tersimpan di session,
+     * tanpa memaksa user mengetik ulang emailnya.
+     */
+    public function resendOtp()
+    {
+        $email = session('otp_email');
+
+        if (! $email) {
+            return redirect()->route('password.request');
         }
 
-        // Hapus OTP lama milik email ini biar tidak menumpuk.
+        $this->generateAndSendOtp($email);
+
+        return redirect()->route('password.otp.form')
+            ->with('status', 'Jika email terdaftar, kode OTP baru telah dikirim.');
+    }
+
+    /**
+     * Helper: generate OTP baru & kirim ke email jika user memang ada.
+     * Tidak melakukan apa pun (secara diam-diam) kalau email tidak ditemukan,
+     * supaya keberadaan/ketidakberadaan user tidak bisa dibedakan pemanggil.
+     */
+    private function generateAndSendOtp(string $email): void
+    {
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            return;
+        }
+
         DB::table('password_otps')->where('email', $user->email)->delete();
 
         $otp = (string) random_int(100000, 999999);
@@ -49,13 +82,6 @@ class ForgotPasswordController
         ]);
 
         Mail::to($user->email)->send(new OtpMail($otp));
-
-        // Simpan email di session supaya step verify & reset tidak perlu
-        // input ulang / tidak bisa dimanipulasi lewat form hidden input.
-        session(['otp_email' => $user->email]);
-
-        return redirect()->route('password.otp.form')
-            ->with('status', 'Kode OTP telah dikirim ke email Anda.');
     }
 
     /**
@@ -102,6 +128,10 @@ class ForgotPasswordController
         // "izin" buat akses halaman reset password.
         session(['otp_verified' => true]);
 
+        // OTP langsung dihapus setelah dipakai — tidak dibiarkan "hidup"
+        // sampai proses reset password selesai.
+        DB::table('password_otps')->where('email', $email)->delete();
+
         return redirect()->route('password.reset.form');
     }
 
@@ -140,8 +170,6 @@ class ForgotPasswordController
 
         $user->password = Hash::make($request->password);
         $user->save();
-
-        DB::table('password_otps')->where('email', $email)->delete();
 
         session()->forget(['otp_email', 'otp_verified']);
 

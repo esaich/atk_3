@@ -15,26 +15,12 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class BarangMasukController extends Controller
 {
     /**
-     * Catatan Penting:
-     * Agar controller ini berfungsi, pastikan model 'Barang' dan 'Supplier' Anda
-     * dikonfigurasi untuk menggunakan tabel 'barang' dan 'supplier' (tunggal) di database.
-     * File model Barang.php dan Supplier.php harus memiliki: protected $table = 'nama_tabel';
+     * Query dasar dengan filter yang dipakai ulang oleh index() dan downloadPdf().
      */
-
-    /**
-     * Menampilkan daftar semua barang masuk dengan opsi filter.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\View\View
-     */
-    public function index(Request $request)
+    private function filteredQuery(Request $request)
     {
-        // Mengambil semua data supplier untuk dropdown filter
-        $suppliers = Supplier::all();
-
         $query = BarangMasuk::with('barang', 'supplier');
 
-        // Menerapkan filter berdasarkan parameter request
         if ($request->filled('start_date')) {
             $query->whereDate('tanggal_masuk', '>=', $request->start_date);
         }
@@ -50,26 +36,25 @@ class BarangMasukController extends Controller
         if ($request->filled('year')) {
             $query->whereYear('tanggal_masuk', $request->year);
         }
-        
-        // --- LOGIKA BARU: Filter berdasarkan supplier_id ---
+
         if ($request->filled('supplier_id')) {
             $query->where('supplier_id', $request->supplier_id);
         }
 
-        // Urutkan berdasarkan tanggal masuk terbaru
-        $barangMasuks = $query->orderBy('tanggal_masuk', 'desc')->get();
+        return $query;
+    }
 
-        // Mengirimkan nilai filter kembali ke view untuk mengisi form
+    public function index(Request $request)
+    {
+        $suppliers = Supplier::all();
+
+        $barangMasuks = $this->filteredQuery($request)->orderBy('tanggal_masuk', 'desc')->get();
+
         $filterValues = $request->only(['start_date', 'end_date', 'month', 'year', 'supplier_id']);
 
         return view('barang-masuk.index', compact('barangMasuks', 'filterValues', 'suppliers'));
     }
 
-    /**
-     * Menampilkan form untuk membuat barang masuk baru.
-     *
-     * @return \Illuminate\View\View
-     */
     public function create()
     {
         $barangs = Barang::all();
@@ -77,17 +62,11 @@ class BarangMasukController extends Controller
         return view('barang-masuk.create', compact('barangs', 'suppliers'));
     }
 
-    /**
-     * Menyimpan barang masuk baru ke database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'barang_id' => 'required|exists:barang,id',
-            'supplier_id' => 'required|exists:supplier,id', // Diperbarui untuk merujuk ke tabel 'supplier'
+            'supplier_id' => 'required|exists:supplier,id',
             'jumlah_masuk' => 'required|integer|min:1',
             'harga_satuan' => 'required|numeric|min:0',
             'tanggal_masuk' => 'required|date',
@@ -128,13 +107,6 @@ class BarangMasukController extends Controller
         }
     }
     
-
-    /**
-     * Menampilkan form untuk mengedit barang masuk.
-     *
-     * @param  \App\Models\BarangMasuk  $barangMasuk
-     * @return \Illuminate\View\View
-     */
     public function edit(BarangMasuk $barangMasuk)
     {
         $barangs = Barang::all();
@@ -142,18 +114,11 @@ class BarangMasukController extends Controller
         return view('barang-masuk.edit', compact('barangMasuk', 'barangs', 'suppliers'));
     }
 
-    /**
-     * Memperbarui data barang masuk di database.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\BarangMasuk  $barangMasuk
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function update(Request $request, BarangMasuk $barangMasuk)
     {
         $validatedData = $request->validate([
             'barang_id' => 'required|exists:barang,id',
-            'supplier_id' => 'required|exists:supplier,id', // Diperbarui untuk merujuk ke tabel 'supplier'
+            'supplier_id' => 'required|exists:supplier,id',
             'jumlah_masuk' => 'required|integer|min:1',
             'harga_satuan' => 'required|numeric|min:0',
             'tanggal_masuk' => 'required|date',
@@ -171,7 +136,6 @@ class BarangMasukController extends Controller
                                  ->first();
             if ($oldPayment) {
                 $oldPayment->total_harga -= $oldSubTotal;
-                // LOGIKA BARU: Hapus payment jika total harga menjadi <= 0
                 if ($oldPayment->total_harga <= 0) {
                     $oldPayment->delete();
                 } else {
@@ -215,12 +179,6 @@ class BarangMasukController extends Controller
         }
     }
 
-    /**
-     * Menghapus data barang masuk dari database.
-     *
-     * @param  \App\Models\BarangMasuk  $barangMasuk
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function destroy(BarangMasuk $barangMasuk)
     {
         DB::beginTransaction();
@@ -235,7 +193,6 @@ class BarangMasukController extends Controller
             if ($payment) {
                 $payment->total_harga -= $subTotalToDelete;
                 
-                // LOGIKA BARU: Hapus record pembayaran jika totalnya menjadi <= 0
                 if ($payment->total_harga <= 0) {
                     $payment->delete();
                 } else {
@@ -261,51 +218,26 @@ class BarangMasukController extends Controller
 
     public function downloadPdf(Request $request)
     {
-        // Mengambil nilai filter dari request
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-        $month = $request->input('month');
-        $year = $request->input('year');
         $supplierId = $request->input('supplier_id');
 
-        // Memulai query dengan eager loading
-        $query = BarangMasuk::with(['barang', 'supplier']);
+        $barangMasuks = $this->filteredQuery($request)->orderBy('tanggal_masuk', 'desc')->get();
 
-        // Menerapkan filter yang sama seperti di metode index
-        if ($startDate && $endDate) {
-            $query->whereBetween('tanggal_masuk', [$startDate, $endDate]);
-        } elseif ($month && $year) {
-            $query->whereMonth('tanggal_masuk', $month)
-                  ->whereYear('tanggal_masuk', $year);
-        }
-
-        if ($supplierId) {
-            $query->where('supplier_id', $supplierId);
-        }
-
-        // Mengambil data barang masuk yang sudah difilter
-        $barangMasuks = $query->orderBy('tanggal_masuk', 'desc')->get();
-
-        // Mengambil nama supplier jika ada, untuk judul PDF
         $supplierName = $supplierId ? Supplier::find($supplierId)->nama_supplier : 'Semua Supplier';
 
-        // Data yang akan dilewatkan ke view PDF
         $data = [
             'barangMasuks' => $barangMasuks,
             'filterValues' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'month' => $month,
-                'year' => $year,
+                'start_date' => $request->input('start_date'),
+                'end_date' => $request->input('end_date'),
+                'month' => $request->input('month'),
+                'year' => $request->input('year'),
                 'supplier_id' => $supplierId
             ],
             'supplierName' => $supplierName
         ];
 
-        // Buat PDF dari tampilan 'barang-masuk.pdf-cetak'
         $pdf = Pdf::loadView('barang-masuk.pdf-cetak', $data);
 
-        // Mengunduh PDF
         return $pdf->download('laporan-barang-masuk-' . Carbon::now()->format('Ymd') . '.pdf');
     }
 }

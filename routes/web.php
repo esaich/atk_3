@@ -20,7 +20,7 @@ Route::redirect('/', '/login'); // Redirect to login
 
 // Login Page
 Route::get('/login', [SesiController::class, 'index'])->name('login');
-Route::post('/login', [SesiController::class, 'login']);
+Route::post('/login', [SesiController::class, 'login'])->middleware('throttle:5,1');
 
 // Forgot Password (OTP via email)
 Route::middleware('throttle:6,1')->group(function () {
@@ -29,6 +29,7 @@ Route::middleware('throttle:6,1')->group(function () {
 
     Route::get('/forgot-password/otp', [ForgotPasswordController::class, 'showOtpForm'])->name('password.otp.form');
     Route::post('/forgot-password/otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
+    Route::post('/forgot-password/otp/resend', [ForgotPasswordController::class, 'resendOtp'])->name('password.otp.resend');
 
     Route::get('/forgot-password/reset', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset.form');
     Route::post('/forgot-password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
@@ -40,12 +41,10 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
 
     // Rute Barang (Manajemen Barang)
-    // BARIS PENTING YANG DITAMBAHKAN UNTUK MEMPERBAIKI ERROR 'downloadPdf'
     Route::get('barang/download-pdf', [BarangController::class, 'downloadPdf'])->name('barang.downloadPdf');
     Route::resource('barang', BarangController::class);
 
     // Rute Barang Masuk
-    // Menambahkan rute khusus untuk mengunduh PDF
     Route::get('barang-masuk/download-pdf', [BarangMasukController::class, 'downloadPdf'])->name('barang-masuk.downloadPdf');
     Route::resource('barang-masuk', BarangMasukController::class);
     
@@ -92,7 +91,6 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
 
         // Rute untuk Barang Keluar Admin
         Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
-        // Tambahkan route baru untuk mencetak PDF di bawah ini
         Route::get('/barang-keluar/cetak-pdf', [BarangKeluarController::class, 'cetakPdf'])->name('barang-keluar.cetak.pdf');
     });
 });
@@ -119,4 +117,4 @@ Route::post('/logout', function () {
     request()->session()->invalidate();
     request()->session()->regenerateToken();
     return redirect('/login');
-})->name('logout'); 
+})->name('logout');
