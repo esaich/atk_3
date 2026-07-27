@@ -171,6 +171,10 @@ class ForgotPasswordController
         $user->password = Hash::make($request->password);
         $user->save();
 
+        // Hapus baris OTP di database, bukan cuma session spaya tidak menumpuk
+        // terusss OTP yang sudah terpakai tidak bisa direuse.
+        DB::table('password_otps')->where('email', $email)->delete();
+
         session()->forget(['otp_email', 'otp_verified']);
 
         return redirect()->route('login')->with('status', 'Password berhasil diubah, silakan login.');

@@ -81,6 +81,7 @@ class PengadaanBarangController extends Controller
                 'tanggal_pengajuan' => $item['tanggal_pengajuan'],
                 'keterangan' => $item['keterangan'] ?? null,
                 'supplier_id' => $item['supplier_id'],
+                'status' => 'diajukan',
             ]);
         }
 
@@ -91,11 +92,7 @@ class PengadaanBarangController extends Controller
         return redirect()->route('pengadaan.index')->with('success', 'Semua pengajuan pengadaan barang berhasil diajukan.');
     }
 
-    public function show(PengadaanBarang $pengadaanBarang)
-    {
-        $pengadaanBarang->load('supplier');
-        return view('pengadaan.show', compact('pengadaanBarang'));
-    }
+    
 
     public function edit(PengadaanBarang $pengadaanBarang)
     {
@@ -105,6 +102,10 @@ class PengadaanBarangController extends Controller
 
     public function update(Request $request, PengadaanBarang $pengadaanBarang)
     {
+        if ($pengadaanBarang->status !== 'diajukan') {
+            return redirect()->route('pengadaan.index')->with('error', 'Pengajuan yang sudah diproses bendahara (disetujui/ditolak) tidak bisa diubah lagi.');
+        }
+
         $validated = $request->validate([
             'nama_barang' => 'required|string|max:255',
             'satuan' => 'nullable|string|max:100',
@@ -121,6 +122,10 @@ class PengadaanBarangController extends Controller
 
     public function destroy(PengadaanBarang $pengadaanBarang)
     {
+        if ($pengadaanBarang->status === 'disetujui') {
+            return redirect()->route('pengadaan.index')->with('error', 'Pengajuan yang sudah disetujui bendahara tidak bisa dihapus.');
+        }
+
         $pengadaanBarang->delete();
 
         return redirect()->route('pengadaan.index')->with('success', 'Pengajuan pengadaan barang berhasil dihapus.');
@@ -147,9 +152,15 @@ class PengadaanBarangController extends Controller
     {
         DB::beginTransaction();
         try {
-            PengadaanBarang::where('supplier_id', $supplier->id)
-                           ->whereDate('tanggal_pengajuan', $tanggal_pengajuan)
-                           ->delete();
+            $query = PengadaanBarang::where('supplier_id', $supplier->id)
+                           ->whereDate('tanggal_pengajuan', $tanggal_pengajuan);
+
+            if ((clone $query)->where('status', 'disetujui')->exists()) {
+                DB::rollBack();
+                return redirect()->route('pengadaan.index')->with('error', 'Grup ini mengandung item yang sudah disetujui bendahara dan tidak bisa dihapus.');
+            }
+
+            $query->delete();
 
             DB::commit();
             return redirect()->route('pengadaan.index')->with('success', 'Seluruh pengajuan pengadaan dari supplier ' . $supplier->nama_supplier . ' pada tanggal ' . Carbon::parse($tanggal_pengajuan)->format('d-m-Y') . ' berhasil dihapus.');

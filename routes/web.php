@@ -6,6 +6,8 @@ use App\Http\Controllers\SesiController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\DivisiUserController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\BendaharaController;
+use App\Http\Controllers\BendaharaUserController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\BarangController;
@@ -42,7 +44,7 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
 
     // Rute Barang (Manajemen Barang)
     Route::get('barang/download-pdf', [BarangController::class, 'downloadPdf'])->name('barang.downloadPdf');
-    Route::resource('barang', BarangController::class);
+    Route::resource('barang', BarangController::class)->except(['show']);
 
     // Rute Barang Masuk
     Route::get('barang-masuk/download-pdf', [BarangMasukController::class, 'downloadPdf'])->name('barang-masuk.downloadPdf');
@@ -62,11 +64,11 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
         Route::get('/', [PengadaanBarangController::class, 'indexGrouped'])->name('index'); 
         Route::get('/create', [PengadaanBarangController::class, 'create'])->name('create');
         Route::post('/', [PengadaanBarangController::class, 'store'])->name('store');
-        Route::get('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'show'])->name('show'); 
+
         Route::get('/item/{pengadaanBarang}/edit', [PengadaanBarangController::class, 'edit'])->name('edit'); 
         Route::put('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'update'])->name('update'); 
         Route::delete('/item/{pengadaanBarang}', [PengadaanBarangController::class, 'destroy'])->name('destroy'); 
-        Route::get('/item/{pengadaanBarang}/download-pdf', [PengadaanBarangController::class, 'downloadPdfItem'])->name('downloadPdfItem'); 
+        Route::get('/item/{pengadaanBarang}/download-pdf', [PengadaanBarangController::class, 'downloadPdf'])->name('downloadPdfItem');
         Route::get('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedShow'])->name('groupedShow'); 
         Route::delete('/grouped/{supplier}/{tanggal_pengajuan}', [PengadaanBarangController::class, 'groupedDestroy'])->name('groupedDestroy'); 
         Route::get('/grouped/{supplier}/{tanggal_pengajuan}/download-pdf', [PengadaanBarangController::class, 'downloadPdfGrouped'])->name('downloadPdfGrouped'); 
@@ -76,6 +78,7 @@ Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function ()
     // IMPORTANT block: Admin routes group with 'admin/' URL prefix and 'admin.' name prefix
     Route::prefix('admin')->as('admin.')->group(function () {
         Route::resource('divisi', DivisiUserController::class);
+        Route::resource('bendahara', BendaharaUserController::class)->except(['show']);
         
         // Rute untuk Permintaan Admin
         Route::get('/permintaan', [PermintaanAdminController::class, 'index'])->name('permintaan.index'); 
@@ -109,6 +112,23 @@ Route::middleware(['auth', RoleMiddleware::class . ':divisi'])
         // Rute untuk Pengaturan Akun Divisi
         Route::get('/settings', [DivisiController::class, 'showSettingsForm'])->name('settings.index');
         Route::put('/settings', [DivisiController::class, 'updateSettings'])->name('settings.update');
+    });
+
+// Bendahara middleware group
+Route::middleware(['auth', RoleMiddleware::class . ':bendahara'])
+    ->prefix('bendahara')
+    ->name('bendahara.')
+    ->group(function () {
+        Route::get('/', [BendaharaController::class, 'index'])->name('dashboard');
+
+        // Rute peninjauan pengajuan pengadaan
+        Route::get('/pengadaan', [BendaharaController::class, 'pengadaanIndex'])->name('pengadaan.index');
+        Route::post('/pengadaan/{pengadaanBarang}/approve', [BendaharaController::class, 'approve'])->name('pengadaan.approve');
+        Route::post('/pengadaan/{pengadaanBarang}/reject', [BendaharaController::class, 'reject'])->name('pengadaan.reject');
+
+        // Rute pengaturan akun bendahara
+        Route::get('/settings', [BendaharaController::class, 'showSettingsForm'])->name('settings.index');
+        Route::put('/settings', [BendaharaController::class, 'updateSettings'])->name('settings.update');
     });
 
 // Logout

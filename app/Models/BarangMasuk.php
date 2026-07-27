@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Pastikan ini ada
+use App\Models\PengadaanBarang;
 
 class BarangMasuk extends Model
 {
@@ -12,6 +13,7 @@ class BarangMasuk extends Model
     protected $fillable = [
         'barang_id',
         'supplier_id', // <--- HARUS supplier_id
+        'pengadaan_barang_id',
         'jumlah_masuk',
         'harga_satuan',
         'tanggal_masuk',
@@ -32,6 +34,12 @@ class BarangMasuk extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
+
+    // Relasi ke pengajuan pengadaan (jika barang masuk ini berdasarkan pengajuan yang disetujui)
+    public function pengadaanBarang(): BelongsTo
+    {
+        return $this->belongsTo(PengadaanBarang::class, 'pengadaan_barang_id');
     }
 
     // Jika Anda masih memiliki relasi payment() di BarangMasuk dan payment_id sudah dihapus dari DB,

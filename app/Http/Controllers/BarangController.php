@@ -47,12 +47,6 @@ class BarangController extends Controller
     /**
      * Tampilkan detail barang tertentu.
      */
-    public function show(Barang $barang)
-    {
-        // Metode ini mungkin memerlukan tampilan 'barang.show'
-        // untuk menampilkan detail barang secara spesifik.
-        return view('barang.show', compact('barang'));
-    }
 
     /**
      * Tampilkan formulir untuk mengedit barang.
@@ -87,13 +81,25 @@ class BarangController extends Controller
      */
     public function destroy(Barang $barang)
     {
+        // Cek dulu apakah barang ini masih punya riwayat transaksi.
+        // Catatan: FK di migration pakai onDelete('cascade'), BUKAN restrict,
+        // jadi $barang->delete() TIDAK akan pernah throw exception walau ada riwayat.
+        $punyaRiwayat = $barang->barangMasuk()->exists()
+            || $barang->barangKeluar()->exists()
+            || $barang->permintaanBarang()->exists();
+
+        if ($punyaRiwayat) {
+            return redirect()->route('barang.index')
+                ->with('error', 'Barang tidak bisa dihapus karena masih ada di riwayat barang masuk, barang keluar, atau permintaan barang.');
+        }
+
         try {
             $barang->delete();
-            // Menggunakan notifikasi berbasis session
             return redirect()->route('barang.index')->with('success', 'Data barang berhasil dihapus!');
         } catch (\Exception $e) {
-            // Menggunakan notifikasi berbasis session
-            return redirect()->route('barang.index')->with('error', 'Barang tidak bisa dihapus karena masih ada di riwayat barang masuk atau keluar.');
+            // Fallback untuk error tak terduga lain (bukan soal riwayat),
+            // misal koneksi DB putus, dsb.
+            return redirect()->route('barang.index')->with('error', 'Barang gagal dihapus. Silakan coba lagi.');
         }
     }
 

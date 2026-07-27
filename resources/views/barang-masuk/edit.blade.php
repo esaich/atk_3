@@ -59,6 +59,18 @@
             </div>
 
             <div class="col-md-6">
+              <label for="pengadaan_barang_id" class="form-label">Berdasarkan Pengadaan (opsional)</label>
+              <select name="pengadaan_barang_id" id="pengadaan_barang_id" class="form-select">
+                <option value="">-- Tanpa Pengadaan (input manual) --</option>
+                @foreach($pengadaanDisetujui as $pengadaan)
+                  <option value="{{ $pengadaan->id }}" {{ old('pengadaan_barang_id', $barangMasuk->pengadaan_barang_id) == $pengadaan->id ? 'selected' : '' }}>
+                    {{ $pengadaan->nama_barang }} — {{ $pengadaan->supplier->nama_supplier ?? '-' }} (sisa {{ $pengadaan->sisa_jumlah }} {{ $pengadaan->satuan }})
+                  </option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-md-6">
               <label for="jumlah_masuk" class="form-label">Jumlah Masuk</label>
               <input type="number" name="jumlah_masuk" id="jumlah_masuk" class="form-control" min="1" value="{{ old('jumlah_masuk', $barangMasuk->jumlah_masuk) }}" required>
             </div>
